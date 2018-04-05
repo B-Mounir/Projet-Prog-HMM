@@ -1,4 +1,4 @@
-import numpy as np 
+import numpy as np
 import random
 
 
@@ -105,3 +105,15 @@ class HMM:
         for i in range(len(h)):
             if h[i] == 1:
                 return i
+
+    def gen_rand(self, n):
+        i = HMM.draw_multinomial(self.initial[0])
+        m = np.zeros((1, n))
+        for j in range(n):
+            m[j] = HMM.draw_multinomial(self.emissions[i])
+            i = HMM.draw_multinomial(self.transitions[i])
+        return m
+
+
+a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
+print(a.gen_rand(10))
