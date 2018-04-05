@@ -25,9 +25,9 @@ class HMM:
     def nbl(self, x):
         """Modify the number of letters"""
         if not isinstance(x, int):
-            raise ValueError("Value Error : please enter an integer")
+            raise ValueError("Value Error : should be an integer")
         elif x <= 0:
-            raise ValueError("Value Error : should be superior to 0")
+            raise ValueError("Value Error : should be positive")
         self.__nbl = x
 
     @property
@@ -52,7 +52,7 @@ class HMM:
     def initial(self, x):
         """Modify the initial transition"""
         if not isinstance(x, np.ndarray):
-            raise ValueError("Value Error : please enter an array")
+            raise ValueError("Value Error : should be an array")
         elif x.shape != (1, self.nbs):
             raise ValueError("Value Error : wrong shape, should be (1, nbs)")
         elif x.dtype != float:
