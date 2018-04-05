@@ -97,7 +97,7 @@ class HMM:
             if not np.isclose(y, [1.0], 0.001):
                 raise ValueError("Value Error : sum of transitions' probabilities from each state should be 1")
 
-        self.__emissions = x
+        self.__emissions = x 
 
     @staticmethod
     def draw_multinomial(l):
