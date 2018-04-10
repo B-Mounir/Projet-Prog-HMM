@@ -110,7 +110,7 @@ class HMM:
         i = HMM.draw_multinomial(self.initial[0])
         m = np.zeros((1, n))
         for j in range(n):
-            m[j] = HMM.draw_multinomial(self.emissions[i])
+            m[0][j] = HMM.draw_multinomial(self.emissions[i])
             i = HMM.draw_multinomial(self.transitions[i])
         return m
 
