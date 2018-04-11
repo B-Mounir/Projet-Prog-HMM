@@ -158,12 +158,15 @@ class HMM:
         return m
 
     def pfw(self, w):
-        if isinstance(w, np.array):
+        if isinstance(w,np.ndarray):
             w = w[0]
         n = len(w)
-        F = np.zeros((self.nbs, n))
+        F = np.zeros((1, self.nbs))
         for k in range(self.nbs):
-            F[k][0] = self.initial[0][k]*self.emissions[k][w[0]]
+            F[0][k] = self.initial[0][k] * self.emissions[k][w[0]]
+        for i in range(1, n):
+            F = np.dot(F, self.transitions) * self.emissions[:,w[i]]
+        return F
 
 
 
@@ -173,13 +176,27 @@ class HMM:
 #a.save('/home/vincent/Documents/Test_save')
 
 b = HMM.load('/home/vincent/Documents/Cours/Semestre 4/Programmation S4/Projet-Prog-HMM/HMM.txt')
-print(b)
-print(b.nbl)
-print()
-print(b.nbs)
-print()
-print(b.initial)
-print()
-print(b.transitions)
-print()
-print(b.emissions)
+
+#print(b)
+#print(b.nbl)
+#print()
+#print(b.nbs)
+#print()
+#print(b.initial)
+#print()
+#print(b.transitions)
+#print()
+#print(b.emissions)
+#print()
+
+c = b.gen_rand(10)
+
+w = np.array([[1, 1, 1]])
+print(w)
+F1 = b.pfw(w)
+print("forwardArray", F1)
+
+z = [1, 1, 1]
+print(z)
+F2 = b.pfw(z)
+print("forwardList", F2)
