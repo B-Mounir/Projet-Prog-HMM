@@ -106,43 +106,47 @@ class HMM:
     def load(adr):
         with open(adr, 'r') as HLM:
             lines = HLM.readlines()
-            nbl = float(lines[1])
-            nbs = float(lines[3])
+            nbl = int(lines[1])
+            nbs = int(lines[3])
             initial = []
             i = 5
             while lines[i][0] != '#':
                 initial.append(float(lines[i]))
                 i += 1
             i += 1
-            initial = np.array(initial)
+            initial = np.array([initial])
             transitions = []
             while lines[i][0] != '#':
                 transitions.append([float(e) for e in lines[i].split()])
                 i += 1
-            transitions = np.array(transitions)
             i += 1
+            transitions = np.array(transitions)
             emissions = []
-            while lines[i][0] != '#':
+            while i < len(lines):
                 emissions.append([float(e) for e in lines[i].split()])
                 i += 1
             emissions = np.array(emissions)
-        return nbl, nbs, initial, transitions, emissions
+        return HMM(nbl, nbs, initial, transitions, emissions)
 
     def save(self, adr):
         with open(adr, 'w') as HLM:
             HLM.write('# The number of letters')
-            HLM.write(self.nbl)
-            HLM.write('# The number of states')
-            HLM.write(self.nbs)
-            HLM.write('# The initial transitions')
-            for e in self.initial:
-                HLM.write(e)
-            HLM.write('# The internal transitions')
-            for e in self.transitions:
-                HLM.write(' '.join(e))
-            HLM.write('# The emissions')
-            for e in self.emissions:
-                HLM.write(' '.join(e))
+            HLM.write('\n' + str(self.nbl))
+            HLM.write('\n' + '# The number of states')
+            HLM.write('\n' + str(self.nbs))
+            HLM.write('\n' + '# The initial transitions')
+            for e in self.initial[0]:
+                HLM.write('\n' + str(e))
+            HLM.write('\n' + '# The internal transitions')
+            for l in self.transitions:
+                HLM.write('\n')
+                for c in l:
+                    HLM.write(str(c) + ' ')
+            HLM.write('\n' + '# The emissions')
+            for l in self.emissions:
+                HLM.write('\n')
+                for c in l:
+                    HLM.write(str(c) + ' ')
 
     def gen_rand(self, n):
         i = HMM.draw_multinomial(self.initial[0])
@@ -153,15 +157,28 @@ class HMM:
         return m
 
     def pfw(self, w):
-        n = len(w[0])
+        if isinstance(w, np.array):
+            w = w[0]
+        n = len(w)
         F = np.zeros((self.nbs, n))
         for k in range(self.nbs):
-            F[k][0] = 
+            F[k][0] = self.initial[0][k]*self.emissions[k][w[0]]
 
 
 
+#a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
+#print(a.gen_rand(10))
 
+#a.save('/home/vincent/Documents/Test_save')
 
-
-a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
-print(a.gen_rand(10))
+b = HMM.load('/home/vincent/Documents/Cours/Semestre 4/Programmation S4/Projet-Prog-HMM/HMM.txt')
+print(b)
+print(b.nbl)
+print()
+print(b.nbs)
+print()
+print(b.initial)
+print()
+print(b.transitions)
+print()
+print(b.emissions)
