@@ -114,7 +114,7 @@ class HMM:
                 initial.append(float(lines[i]))
                 i += 1
             i += 1
-            initial = np.array(initial)
+            initial = np.array([initial])
             transitions = []
             while lines[i][0] != '#':
                 transitions.append([float(e) for e in lines[i].split()])
