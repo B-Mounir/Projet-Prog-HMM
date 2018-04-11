@@ -102,6 +102,48 @@ class HMM:
             if h[i] == 1:
                 return i
 
+    @staticmethod
+    def load(adr):
+        with open(adr, 'r') as HLM:
+            lines = HLM.readlines()
+            nbl = float(lines[1])
+            nbs = float(lines[3])
+            initial = []
+            i = 5
+            while lines[i][0] != '#':
+                initial.append(float(lines[i]))
+                i += 1
+            i += 1
+            initial = np.array(initial)
+            transitions = []
+            while lines[i][0] != '#':
+                transitions.append([float(e) for e in lines[i].split()])
+                i += 1
+            transitions = np.array(transitions)
+            i += 1
+            emissions = []
+            while lines[i][0] != '#':
+                emissions.append([float(e) for e in lines[i].split()])
+                i += 1
+            emissions = np.array(emissions)
+        return nbl, nbs, initial, transitions, emissions
+
+    def save(self, adr):
+        with open(adr, 'w') as HLM:
+            HLM.write('# The number of letters')
+            HLM.write(self.nbl)
+            HLM.write('# The number of states')
+            HLM.write(self.nbs)
+            HLM.write('# The initial transitions')
+            for e in self.initial:
+                HLM.write(e)
+            HLM.write('# The internal transitions')
+            for e in self.transitions:
+                HLM.write(' '.join(e))
+            HLM.write('# The emissions')
+            for e in self.emissions:
+                HLM.write(' '.join(e))
+
     def gen_rand(self, n):
         i = HMM.draw_multinomial(self.initial[0])
         m = np.zeros((1, n))
