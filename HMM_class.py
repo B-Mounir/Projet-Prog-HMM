@@ -95,12 +95,6 @@ class HMM:
                 raise ValueError("Value Error : sum of transitions' probabilities from each state should be 1")
         self.__emissions = x
 
-    @staticmethod
-    def draw_multinomial(l):
-        h = np.random.multinomial(1, l)
-        for i in range(len(h)):
-            if h[i] == 1:
-                return i
 
     @staticmethod
     def load(adr):
@@ -147,6 +141,13 @@ class HMM:
                 HLM.write('\n')
                 for c in l:
                     HLM.write(str(c) + ' ')
+
+    @staticmethod
+    def draw_multinomial(l):
+        h = np.random.multinomial(1, l)
+        for i in range(len(h)):
+            if h[i] == 1:
+                return i
 
     def gen_rand(self, n):
         i = HMM.draw_multinomial(self.initial[0])
