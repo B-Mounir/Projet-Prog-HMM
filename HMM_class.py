@@ -41,7 +41,6 @@ class HMM:
             raise ValueError("Value Error : please enter an integer")
         elif x <= 0:
             raise ValueError("Value Error : should be superior to 0")
-
         self.__nbs = x
 
     @property
@@ -54,12 +53,11 @@ class HMM:
         if not isinstance(x, np.ndarray):
             raise ValueError("Value Error : should be an array")
         elif x.shape != (1, self.nbs):
-            raise ValueError("Value Error : wrong shape, should be (1, nbs)")
+            raise ValueError("Value Error : shape should be (1, nbs)")
         elif x.dtype != float:
-            raise ValueError("Value Error : elements of array with wrong type, should be float")
+            raise ValueError("Value Error : elements of array should be float")
         elif not np.isclose(x.sum(), [1.0], 0.001):
             raise ValueError("Value Error : sum of initial probabilities should be equal to 1")
-
         self.__initial = x
 
     @property
@@ -69,15 +67,14 @@ class HMM:
     @transitions.setter
     def transitions(self, x):
         if not isinstance(x, np.ndarray):
-            raise ValueError("Value Error : please enter an array")
+            raise ValueError("Value Error : should be an array")
         elif x.shape != (self.nbs, self.nbs):
-            raise ValueError("Value Error : wrong shape, should be (nbs, nbs)")
+            raise ValueError("Value Error : shape should be (nbs, nbs)")
         elif x.dtype != float:
-            raise ValueError("Value Error : elements of array with wrong type, should be float")
+            raise ValueError("Value Error : elements of array should be float")
         for y in x.sum(axis=1):
             if not np.isclose(y, [1.0], 0.001):
                 raise ValueError("Value Error : sum of transitions' probabilities from each state should be 1")
-
         self.__transitions = x
 
     @property
@@ -88,16 +85,14 @@ class HMM:
     def emissions(self, x):
         """Modify the emission vector"""
         if not isinstance(x, np.ndarray):
-            raise ValueError("Value Error : please enter an array")
+            raise ValueError("Value Error : should be an array")
         elif x.shape != (self.nbs, self.nbl):
-            raise ValueError("Value Error : wrong shape, should be (nbs, nbl)")
+            raise ValueError("Value Error : shape should be (nbs, nbl)")
         elif x.dtype != float:
-            raise ValueError("Value Error : elements of array with wrong type, should be float")
+            raise ValueError("Value Error : elements of array should be float")
         for y in x.sum(axis=1):
             if not np.isclose(y, [1.0], 0.001):
                 raise ValueError("Value Error : sum of transitions' probabilities from each state should be 1")
-
-        self.__emissions = x 
 
     @staticmethod
     def draw_multinomial(l):
