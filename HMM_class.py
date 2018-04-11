@@ -93,6 +93,7 @@ class HMM:
         for y in x.sum(axis=1):
             if not np.isclose(y, [1.0], 0.001):
                 raise ValueError("Value Error : sum of transitions' probabilities from each state should be 1")
+        self.__emissions = x
 
     @staticmethod
     def draw_multinomial(l):
@@ -108,6 +109,8 @@ class HMM:
             m[0][j] = HMM.draw_multinomial(self.emissions[i])
             i = HMM.draw_multinomial(self.transitions[i])
         return m
+
+
 
 
 a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
