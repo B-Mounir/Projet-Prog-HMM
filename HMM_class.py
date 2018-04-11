@@ -152,6 +152,14 @@ class HMM:
             i = HMM.draw_multinomial(self.transitions[i])
         return m
 
+    def pfw(self, w):
+        n = len(w[0])
+        F = np.zeros((self.nbs, n))
+        for k in range(self.nbs):
+            F[k][0] = 
+
+
+
 
 
 
