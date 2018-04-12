@@ -134,13 +134,11 @@ class HMM:
             HLM.write('\n' + '# The internal transitions')
             for l in self.transitions:
                 HLM.write('\n')
-                for c in l:
-                    HLM.write(str(c) + ' ')
+                HLM.write(' '.join(l))
             HLM.write('\n' + '# The emissions')
             for l in self.emissions:
                 HLM.write('\n')
-                for c in l:
-                    HLM.write(str(c) + ' ')
+                HLM.write(' '.join(l))
 
     @staticmethod
     def draw_multinomial(l):
