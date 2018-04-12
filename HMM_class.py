@@ -144,16 +144,22 @@ class HMM:
 
     @staticmethod
     def draw_multinomial(l):
-        h = np.random.multinomial(1, l)
-        for i in range(len(h)):
-            if h[i] == 1:
+        M = []
+        sum = 0
+        for i in range(len(l)):
+            M += [sum]
+            sum += l[i]
+        M += [sum]
+        x = random.random()
+        for i in range(len(M)):
+            if M[i] <= x <= M[i+1]:
                 return i
 
     def gen_rand(self, n):
         i = HMM.draw_multinomial(self.initial[0])
-        m = np.zeros((1, n))
+        m = []
         for j in range(n):
-            m[0][j] = HMM.draw_multinomial(self.emissions[i])
+            m.append(HMM.draw_multinomial(self.emissions[i]))
             i = HMM.draw_multinomial(self.transitions[i])
         return m
 
@@ -166,7 +172,7 @@ class HMM:
             F[0][k] = self.initial[0][k] * self.emissions[k][w[0]]
         for i in range(1, n):
             F = np.dot(F, self.transitions) * self.emissions[:,w[i]]
-        return F
+        return F.sum()
 
 
 
@@ -189,8 +195,25 @@ b = HMM.load('/home/vincent/Documents/Cours/Semestre 4/Programmation S4/Projet-P
 #print(b.emissions)
 #print()
 
-c = b.gen_rand(10)
+n=10
+i = HMM.draw_multinomial(b.initial[0])
+print(i)
+m = []
+print(m)
+for j in range(n):
+    print("j:", j)
+    m.append(HMM.draw_multinomial(b.emissions[i]))
+    print(m)
+    i = HMM.draw_multinomial(b.transitions[i])
+    print(i)
+print("fin:", m)
 
+
+
+
+
+c = b.gen_rand(10)
+print("c:", c)
 w = np.array([[1, 1, 1]])
 print(w)
 F1 = b.pfw(w)
@@ -200,3 +223,6 @@ z = [1, 1, 1]
 print(z)
 F2 = b.pfw(z)
 print("forwardList", F2)
+
+F3 = b.pfw(c)
+print(F3)
