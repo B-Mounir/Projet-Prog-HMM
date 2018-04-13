@@ -49,7 +49,7 @@ class HMM:
 
     @initial.setter
     def initial(self, x):
-        """Modify the initial transition"""
+        """Modify the vector defining the initial weights"""
         if not isinstance(x, np.ndarray):
             raise ValueError("Value Error : should be an array")
         elif x.shape != (1, self.nbs):
@@ -66,6 +66,7 @@ class HMM:
 
     @transitions.setter
     def transitions(self, x):
+        """Modify the array defining the transitions weights"""
         if not isinstance(x, np.ndarray):
             raise ValueError("Value Error : should be an array")
         elif x.shape != (self.nbs, self.nbs):
@@ -83,7 +84,7 @@ class HMM:
 
     @emissions.setter
     def emissions(self, x):
-        """Modify the emission vector"""
+        """Modify the array defining the emissions weights"""
         if not isinstance(x, np.ndarray):
             raise ValueError("Value Error : should be an array")
         elif x.shape != (self.nbs, self.nbl):
@@ -98,6 +99,7 @@ class HMM:
 
     @staticmethod
     def load(adr):
+        """load a text file and return the HMM corresponding"""
         with open(adr, 'r') as HLM:
             lines = HLM.readlines()
             nbl = int(lines[1])
@@ -123,6 +125,7 @@ class HMM:
         return HMM(nbl, nbs, initial, transitions, emissions)
 
     def save(self, adr):
+        """save a HMM in a text file"""
         with open(adr, 'w') as HLM:
             HLM.write('# The number of letters')
             HLM.write('\n' + str(self.nbl))
@@ -134,26 +137,30 @@ class HMM:
             HLM.write('\n' + '# The internal transitions')
             for l in self.transitions:
                 HLM.write('\n')
-                HLM.write(' '.join(l))
+                for c in l:
+                    HLM.write(str(c) + ' ')
             HLM.write('\n' + '# The emissions')
             for l in self.emissions:
                 HLM.write('\n')
-                HLM.write(' '.join(l))
+                for c in l:
+                    HLM.write(str(c) + ' ')
 
     @staticmethod
     def draw_multinomial(l):
-        M = []
-        sum = 0
+        """return the index coresponding to the result of a draw which respects the multinomial model defined by l"""
+        m = []
+        s = 0
         for i in range(len(l)):
-            M += [sum]
-            sum += l[i]
-        M += [sum]
+            m += [s]
+            s += l[i]
+        m += [s]
         x = random.random()
-        for i in range(len(M)):
-            if M[i] <= x <= M[i+1]:
+        for i in range(len(m)):
+            if m[i] <= x <= m[i+1]:
                 return i
 
     def gen_rand(self, n):
+        """return a random sequence with a lenght equal to n corresponding to a HMM"""
         i = HMM.draw_multinomial(self.initial[0])
         m = []
         for j in range(n):
@@ -162,22 +169,31 @@ class HMM:
         return m
 
     def pfw(self, w):
+        """return the probability of the sequence w with a particular HMM"""
         if isinstance(w,np.ndarray):
             w = w[0]
         n = len(w)
-        F = np.zeros((1, self.nbs))
+        f = np.zeros((1, self.nbs))
         for k in range(self.nbs):
-            F[0][k] = self.initial[0][k] * self.emissions[k][w[0]]
+            f[0][k] = self.initial[0][k] * self.emissions[k][w[0]]
         for i in range(1, n):
-            F = np.dot(F, self.transitions) * self.emissions[:,w[i]]
-        return F.sum()
+            f = np.dot(f, self.transitions) * self.emissions[:,w[i]]
+        return f.sum()
+
+    def viterbi(self, w):
+        """return the Viterbi path of the sequence w and his probability"""
+        n = len(w)
+        p = np.zeros(1, self.nbs)
+        c = []
+        for k in range(self.nbs):
+            p[0][k] = (self.initial[0][k] * self.emissions[k][w[0]])
+            c.append([k])
+        for i in range(1, n):
 
 
-
-#a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
-#print(a.gen_rand(10))
-
-#a.save('/home/vincent/Documents/Test_save')
+'''a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
+print(a.gen_rand(10))
+a.save('/home/vincent/Documents/Test_save')'''
 
 b = HMM.load('/home/vincent/Documents/Cours/Semestre 4/Programmation S4/Projet-Prog-HMM/HMM.txt')
 
@@ -206,13 +222,9 @@ for j in range(n):
     print(i)
 print("fin:", m)
 
-
-
-
-
 c = b.gen_rand(10)
 print("c:", c)
-w = np.array([[1, 1, 1]])
+w = np.array([[0, 1]])
 print(w)
 F1 = b.pfw(w)
 print("forwardArray", F1)
