@@ -17,6 +17,12 @@ class HMM:
         # The list of vectors defining the emissions
         self.emissions = emissions
 
+    def __repr__(self):
+        return self.nbl, self.nbs, self.initial, self.transitions, self.emissions
+
+    def __str__(self):
+        return str(self.__repr__())
+
     @property
     def nbl(self):
         return self.__nbl
@@ -189,23 +195,13 @@ class HMM:
             p[0][k] = (self.initial[0][k] * self.emissions[k][w[0]])
             c.append([k])
         for i in range(1, n):
-  
-    def predit(self, w):
-        """predict the symbol with the highest probability after the sequence w"""
-        H = self.initial
-        for i in range(len(w)):
-            H = np.dot(self.emissions * self.transitions[:, w[i]],H)
-        P = []
-        for j in range(self.nbl):
-            P += np.dot(self.emissions[:, j],H)
-        return P.index(max(P))
 
 
-'''a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
+"""a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
 print(a.gen_rand(10))
-a.save('/home/vincent/Documents/Test_save')'''
+a.save('/home/vincent/Documents/Test_save')"""
 
-b = HMM.load('/home/vincent/Documents/Cours/Semestre 4/Programmation S4/Projet-Prog-HMM/HMM.txt')
+b = HMM.load('HMM.txt')
 
 #print(b)
 #print(b.nbl)
