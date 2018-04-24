@@ -218,6 +218,43 @@ class HMM:
 
         return (c[ind], proba)
 
+    @staticmethod
+    def gen_HMM(nbs, nbl):
+        M = HMM
+        M.nbl = nbl
+        M.nbs = nbs
+        init = np.zeros((1, nbs))
+        transition = np.zeros((nbs, nbs))
+        emission = np.zeros((nbs, nbl))
+        for i in range(nbs):
+            init[0][i] = random.random()
+        init = init / init.sum()
+        M.initial = init
+
+        for i in range(nbs):
+            for j in range(nbs):
+                transition[i][j] = random.random()
+        sum_trans = transition.sum(axis=1)
+        for i in range(nbs):
+            transition[i] = transition[i] / sum_trans[i]
+        M.transitions = transition
+
+        for i in range(nbs):
+            for j in range(nbl):
+                emission[i][j] = random.random()
+        sum_emis = emission.sum(axis=1)
+        for i in range(nbs):
+            emission[i] = emission[i] / sum_emis[i]
+        M.emissions = emission
+
+        return M
+
+
+
+
+
+
+
 
 """a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
 print(a.gen_rand(10))
@@ -266,3 +303,25 @@ F3 = b.pfw(c)
 print(F3)'''
 
 print(b.viterbi([0, 1, 1]))
+
+"""c = np.array([[0.5, 0.5, 0.6, 0.3]])
+print(c)
+d = c / c.sum()
+print(d)
+print(d.sum())
+
+e  =  np.array([[0.5, 0.5, 0.1, 0.4],[0.7, 0.3, 0.8, 0.5], [0.9, 0.4, 0.1, 0.4],[0.3, 0.3, 0.2, 0.1]])
+sum_trans = e.sum(axis=1)
+for i in range(4):
+    e[i] = e[i] / sum_trans[i]
+    print("somme ligne", i,":",e[i].sum())
+print(e)"""
+
+M = HMM.gen_HMM(2, 3)
+print("nbs", M.nbs)
+print("nbl", M.nbl)
+print("init", M.initial, M.initial.sum())
+print("trans", M.transitions, M.transitions.sum(axis=1))
+print("emis", M.emissions, M.emissions.sum(axis=1))
+
+
