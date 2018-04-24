@@ -17,6 +17,12 @@ class HMM:
         # The list of vectors defining the emissions
         self.emissions = emissions
 
+    def __repr__(self):
+        return self.nbl, self.nbs, self.initial, self.transitions, self.emissions
+
+    def __str__(self):
+        return str(self.__repr__())
+
     @property
     def nbl(self):
         return self.__nbl
@@ -213,11 +219,11 @@ class HMM:
         return (c[ind], proba)
 
 
-'''a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
+"""a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
 print(a.gen_rand(10))
-a.save('/home/vincent/Documents/Test_save')'''
+a.save('/home/vincent/Documents/Test_save')"""
 
-b = HMM.load('/home/vincent/Documents/Cours/Semestre 4/Programmation S4/Projet-Prog-HMM/HMM.txt')
+b = HMM.load('HMM.txt')
 
 #print(b)
 #print(b.nbl)
