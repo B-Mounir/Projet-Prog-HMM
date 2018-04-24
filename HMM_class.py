@@ -96,7 +96,6 @@ class HMM:
                 raise ValueError("Value Error : sum of transitions' probabilities from each state should be 1")
         self.__emissions = x
 
-
     @staticmethod
     def load(adr):
         """load a text file and return the HMM corresponding"""
@@ -183,12 +182,35 @@ class HMM:
     def viterbi(self, w):
         """return the Viterbi path of the sequence w and his probability"""
         n = len(w)
-        p = np.zeros(1, self.nbs)
+        p = np.zeros((1, self.nbs))
         c = []
         for k in range(self.nbs):
             p[0][k] = (self.initial[0][k] * self.emissions[k][w[0]])
             c.append([k])
-        for i in range(1, n):
+            for i in range(1, n):
+                M1 = 0
+                M2 = 0
+                l_max = -1
+                max1 = 0
+                max2 = 0
+                for l in range (self.nbs):
+                    M1 = p[0][l] * self.transitions[l][k] * self.emissions[k][w[i]]
+                    M2 = p[0][l] * self.transitions[l][k]
+                    if M1 > max1:
+                        max1 = M1
+                    if M2 > max2 :
+                        max2 = M2
+                        l_max = l
+                p[0][k] = max1
+                c[k] = (c[l_max] + [k])
+        proba = 0
+        ind = -1
+        for j in range (len(p[0])):
+            if p[0][j] > proba:
+                proba = p[0][j]
+                ind = j
+
+        return (c[ind], proba)
 
 
 '''a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
@@ -209,7 +231,7 @@ b = HMM.load('/home/vincent/Documents/Cours/Semestre 4/Programmation S4/Projet-P
 #print(b.emissions)
 #print()
 
-n=10
+'''n=10
 i = HMM.draw_multinomial(b.initial[0])
 print(i)
 m = []
@@ -235,4 +257,6 @@ F2 = b.pfw(z)
 print("forwardList", F2)
 
 F3 = b.pfw(c)
-print(F3)
+print(F3)'''
+
+print(b.viterbi([0, 1, 1]))
