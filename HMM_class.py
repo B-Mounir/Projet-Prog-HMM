@@ -173,8 +173,8 @@ class HMM:
             i = HMM.draw_multinomial(self.transitions[i])
         return m
 
-    def pfw(self, w):
-        """return the probability of the sequence w with a particular HMM"""
+    def fw(self, w):
+        """"""
         if isinstance(w,np.ndarray):
             w = w[0]
         n = len(w)
@@ -183,7 +183,31 @@ class HMM:
             f[0][k] = self.initial[0][k] * self.emissions[k][w[0]]
         for i in range(1, n):
             f = np.dot(f, self.transitions) * self.emissions[:,w[i]]
+        return f
+
+    def pfw(self, w):
+        """return the probability of the sequence w with a particular HMM using fw"""
+        f = self.fw(w)
         return f.sum()
+
+    def bw(self, w):
+        """"""
+        n = len(w)
+        b = np.zeros((1, self.nbs))
+        for k in range(self.nbs):
+            b[0][k] = 1
+        for i in range(n-1, 0, -1):
+            b = np.dot(b, self.transitions) * self.emissions[:, w[i]]
+        return b
+
+    def pbw(self, w):
+        """return the probability of the sequence w with a particular HMM using bw"""
+        b = self.bw(w)
+        p = 0
+        for k in range(self.nbs):
+            p += self.initial[0][k] * self.emissions[k][w[0]] * b[0][k]
+        return p
+
 
     def viterbi(self, w):
         """return the Viterbi path of the sequence w and his probability"""
@@ -248,6 +272,13 @@ class HMM:
         M.emissions = emission
 
         return M
+
+    def BW1(self, S):
+        l = len(S)
+        p = self.pfw(S)
+        for t in range(l):
+            for k in range(self.nbs):
+                
 
 
 
@@ -317,11 +348,14 @@ for i in range(4):
     print("somme ligne", i,":",e[i].sum())
 print(e)"""
 
-M = HMM.gen_HMM(2, 3)
+"""M = HMM.gen_HMM(2, 3)
 print("nbs", M.nbs)
 print("nbl", M.nbl)
 print("init", M.initial, M.initial.sum())
 print("trans", M.transitions, M.transitions.sum(axis=1))
-print("emis", M.emissions, M.emissions.sum(axis=1))
+print("emis", M.emissions, M.emissions.sum(axis=1))"""
+
+print(b.pfw([1, 1]))
+print(b.pbw([1, 1]))
 
 
