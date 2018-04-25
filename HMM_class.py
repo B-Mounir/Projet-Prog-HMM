@@ -149,7 +149,16 @@ class HMM:
                 HLM.write('\n')
                 for c in l:
                     HLM.write(str(c) + ' ')
-
+    
+   def predit(self, w):
+     """predict the symbol with the highest probability after the sequence w"""
+        H = self.initial
+        for i in range(len(w)):
+            H = np.dot(self.emissions * self.transitions[:, w[i]],H)
+        P = []
+        for j in range(self.nbl):
+            P += np.dot(self.emissions[:, j],H)
+        return P.index(max(P))
     @staticmethod
     def draw_multinomial(l):
         """return the index coresponding to the result of a draw which respects the multinomial model defined by l"""
