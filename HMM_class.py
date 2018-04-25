@@ -31,7 +31,7 @@ class HMM:
     def nbl(self, x):
         """Modify the number of letters"""
         if not isinstance(x, int):
-            raise ValueError("Value Error : should be an integer")
+            raise TypeError("Value Error : should be an integer")
         elif x <= 0:
             raise ValueError("Value Error : should be positive")
         self.__nbl = x
@@ -44,7 +44,7 @@ class HMM:
     def nbs(self, x):
         """Modify the numbers of states"""
         if not isinstance(x, int):
-            raise ValueError("Value Error : please enter an integer")
+            raise TypeError("Value Error : please enter an integer")
         elif x <= 0:
             raise ValueError("Value Error : should be superior to 0")
         self.__nbs = x
@@ -57,7 +57,7 @@ class HMM:
     def initial(self, x):
         """Modify the vector defining the initial weights"""
         if not isinstance(x, np.ndarray):
-            raise ValueError("Value Error : should be an array")
+            raise TypeError("Value Error : should be an array")
         elif x.shape != (1, self.nbs):
             raise ValueError("Value Error : shape should be (1, nbs)")
         elif x.dtype != float:
@@ -74,7 +74,7 @@ class HMM:
     def transitions(self, x):
         """Modify the array defining the transitions weights"""
         if not isinstance(x, np.ndarray):
-            raise ValueError("Value Error : should be an array")
+            raise TypeError("Value Error : should be an array")
         elif x.shape != (self.nbs, self.nbs):
             raise ValueError("Value Error : shape should be (nbs, nbs)")
         elif x.dtype != float:
@@ -92,7 +92,7 @@ class HMM:
     def emissions(self, x):
         """Modify the array defining the emissions weights"""
         if not isinstance(x, np.ndarray):
-            raise ValueError("Value Error : should be an array")
+            raise TypeError("Value Error : should be an array")
         elif x.shape != (self.nbs, self.nbl):
             raise ValueError("Value Error : shape should be (nbs, nbl)")
         elif x.dtype != float:
@@ -188,7 +188,14 @@ class HMM:
 
     def pfw(self, w):
         """return the probability of the sequence w with a particular HMM using fw"""
-        f = self.fw(w)
+        if isinstance(w,np.ndarray):
+            w = w[0]
+        n = len(w)
+        f = np.zeros((1, self.nbs))
+        for k in range(self.nbs):
+            f[0][k] = self.initial[0][k] * self.emissions[k][w[0]]
+        for i in range(1, n):
+            f = np.dot(f, self.transitions) * self.emissions[:,w[i]]
         return f.sum()
 
     def bw(self, w):
@@ -203,7 +210,12 @@ class HMM:
 
     def pbw(self, w):
         """return the probability of the sequence w with a particular HMM using bw"""
-        b = self.bw(w)
+        n = len(w)
+        b = np.zeros((1, self.nbs))
+        for k in range(self.nbs):
+            b[0][k] = 1
+        for i in range(n - 1, 0, -1):
+            b = np.dot(b, self.transitions) * self.emissions[:, w[i]]
         p = b * self.initial * self.emissions[:, w[0]]
         return p.sum()
 
@@ -311,7 +323,7 @@ print(a.gen_rand(10))
 a.save('/home/vincent/Documents/Test_save')"""
 
 b = HMM.load('HMM.txt')
-
+print(b.gen_rand(10))
 #print(b)
 #print(b.nbl)
 #print()
