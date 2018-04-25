@@ -149,16 +149,8 @@ class HMM:
                 HLM.write('\n')
                 for c in l:
                     HLM.write(str(c) + ' ')
-    
-   def predit(self, w):
-     """predict the symbol with the highest probability after the sequence w"""
-        H = self.initial
-        for i in range(len(w)):
-            H = np.dot(self.emissions * self.transitions[:, w[i]],H)
-        P = []
-        for j in range(self.nbl):
-            P += np.dot(self.emissions[:, j],H)
-        return P.index(max(P))
+
+
     @staticmethod
     def draw_multinomial(l):
         """return the index coresponding to the result of a draw which respects the multinomial model defined by l"""
@@ -212,11 +204,8 @@ class HMM:
     def pbw(self, w):
         """return the probability of the sequence w with a particular HMM using bw"""
         b = self.bw(w)
-        p = 0
-        for k in range(self.nbs):
-            p += self.initial[0][k] * self.emissions[k][w[0]] * b[0][k]
-        return p
-
+        p = b * self.initial * self.emissions[:, w[0]]
+        return p.sum()
 
     def viterbi(self, w):
         """return the Viterbi path of the sequence w and his probability"""
@@ -282,12 +271,33 @@ class HMM:
 
         return M
 
+    def predit(self, w):
+        H = self.initial[0]
+        for i in range(len(w)):
+            H = (self.transitions.T * self.emissions[:, w[i]].T) @ H
+        P = []
+        for l in range(self.nbl):
+            P += [self.emissions[:, l] @ H]
+        return P.index(max(P))
+
+    """def logV(self, S):
+        L = self.pfw(S)
+        L2 =
+
     def BW1(self, S):
         l = len(S)
-        p = self.pfw(S)
+        E = np.zeros((self.nbs, self.nbs))
+        G = np.zeros((1, self.nbs))
         for t in range(l):
-            for k in range(self.nbs):
-                
+            for i in range(self.nbs):
+                for j in range(self.nbs):
+                    E[i][j] =
+                G[0][i] =
+
+        # réestimer le modele
+        self.initial =
+        self.transitions =
+        self.emissions ="""
 
 
 
@@ -342,7 +352,7 @@ print("forwardList", F2)
 F3 = b.pfw(c)
 print(F3)'''
 
-print(b.viterbi([0, 1, 1]))
+print(b.viterbi([0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]))
 
 """c = np.array([[0.5, 0.5, 0.6, 0.3]])
 print(c)
@@ -367,4 +377,9 @@ print("emis", M.emissions, M.emissions.sum(axis=1))"""
 print(b.pfw([1, 1]))
 print(b.pbw([1, 1]))
 
+print(b)
 
+print(b.predit([1,1,1,1,1]))
+print(b.predit([0,0,0]))
+a = HMM(3, 3, np.array([[1., 0., 0.]]), np.array([[0., 1., 0.], [0., 0., 1.], [1., 0., 0.]]), np.array([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]))
+print(a.predit([0, 1, 2, 0]))
