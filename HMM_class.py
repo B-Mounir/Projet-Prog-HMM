@@ -166,7 +166,7 @@ class HMM:
                 return i
 
     def gen_rand(self, n):
-        """return a random sequence with a lenght equal to n corresponding to a HMM"""
+        """return a random sequence with a length equal to n corresponding to a HMM"""
         i = HMM.draw_multinomial(self.initial[0])
         m = []
         for j in range(n):
@@ -174,7 +174,7 @@ class HMM:
             i = HMM.draw_multinomial(self.transitions[i])
         return m
 
-    def fw(self, w):
+    def fw(self, w, probability=False):
         """"""
         if isinstance(w,np.ndarray):
             w = w[0]
@@ -184,21 +184,11 @@ class HMM:
             f[0][k] = self.initial[0][k] * self.emissions[k][w[0]]
         for i in range(1, n):
             f = np.dot(f, self.transitions) * self.emissions[:,w[i]]
+        if probability:
+            return f.sum()
         return f
 
-    def pfw(self, w):
-        """return the probability of the sequence w with a particular HMM using fw"""
-        if isinstance(w,np.ndarray):
-            w = w[0]
-        n = len(w)
-        f = np.zeros((1, self.nbs))
-        for k in range(self.nbs):
-            f[0][k] = self.initial[0][k] * self.emissions[k][w[0]]
-        for i in range(1, n):
-            f = np.dot(f, self.transitions) * self.emissions[:,w[i]]
-        return f.sum()
-
-    def bw(self, w):
+    def bw(self, w, probability=False):
         """"""
         n = len(w)
         b = np.zeros((1, self.nbs))
@@ -206,18 +196,10 @@ class HMM:
             b[0][k] = 1
         for i in range(n-1, 0, -1):
             b = np.dot(b, self.transitions) * self.emissions[:, w[i]]
+        if probability:
+            p = b * self.initial * self.emissions[:, w[0]]
+            return p.sum()
         return b
-
-    def pbw(self, w):
-        """return the probability of the sequence w with a particular HMM using bw"""
-        n = len(w)
-        b = np.zeros((1, self.nbs))
-        for k in range(self.nbs):
-            b[0][k] = 1
-        for i in range(n - 1, 0, -1):
-            b = np.dot(b, self.transitions) * self.emissions[:, w[i]]
-        p = b * self.initial * self.emissions[:, w[0]]
-        return p.sum()
 
     def viterbi(self, w):
         """return the Viterbi path of the sequence w and his probability"""
