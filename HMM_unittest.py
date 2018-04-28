@@ -13,8 +13,8 @@ class HMMTest(unittest.TestCase):
     def setUp(self):
         self.A = HMM.HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]),
                          np.array([[0.5, 0.5], [0.7, 0.3]]))
-        self.B = HMM.HMM(2,2,np.array([[0.741, 0.259]]),np.array([[0.0115, 0.9885], [0.5084, 0.4916]]),
-                         np.array([[0.4547, 0.5453], [0.2089, 0.7911 ]]))
+        self.B = HMM.HMM(2, 2, np.array([[0.741, 0.259]]), np.array([[0.0115, 0.9885], [0.5084, 0.4916]]),
+                         np.array([[0.4547, 0.5453], [0.2089, 0.7911]]))
 
 
     def test_HMM(self):
@@ -62,22 +62,6 @@ class HMMTest(unittest.TestCase):
                 self.assertEqual(0, x)
             else:
                 self.assertEqual(1, x)
-
-    def test_viterbi(self):
-        h = self.B
-        w = (1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1)
-        (lc, p) = h.viterbi(w)
-        self.assertEqual(lc,(0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1))
-        self.assertAlmostEqual(p, -15.816435284201352)
-
-    def test_BaumWelch(self):
-        h = self.A
-        w = (0,1)
-        h = h.BaumWelch(w)
-        np.testing.assert_allclose(h.initial,np.array([ 0.51724138, 0.48275862]))
-        np.testing.assert_allclose(h.transitions,np.array([[ 0.9375,0.0625 ], [ 0.15625, 0.84375]]))
-        np.testing.assert_allclose(h.emissions,np.array([[ 0.48,0.52], [ 0.52336449, 0.47663551]]))
-
 
 
 if __name__ == "__main__":

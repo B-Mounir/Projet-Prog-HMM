@@ -1,6 +1,6 @@
 import numpy as np
 import random
-
+import math
 
 class HMM:
     """Define an HMM"""
@@ -174,65 +174,68 @@ class HMM:
             i = HMM.draw_multinomial(self.transitions[i])
         return m
 
-    def fw(self, w, probability=False):
+    def fw(self, w):
         """"""
         if isinstance(w,np.ndarray):
             w = w[0]
         n = len(w)
-        f = np.zeros((1, self.nbs))
+        f = np.zeros((self.nbs,))
         for k in range(self.nbs):
-            f[0][k] = self.initial[0][k] * self.emissions[k][w[0]]
+            f[k] = self.initial[0][k] * self.emissions[k][w[0]]
+        f = np.array([])
         for i in range(1, n):
             f = np.dot(f, self.transitions) * self.emissions[:,w[i]]
-        if probability:
-            return f.sum()
         return f
 
-    def bw(self, w, probability=False):
+    def pfw(self, w):
+        """return the probability of the sequence w with a particular HMM using fw"""
+        n = len(w)
+        f = np.zeros((self.nbs,))
+        for k in range(self.nbs):
+            f[k] = self.initial[0][k] * self.emissions[k][w[0]]
+        for i in range(1, n):
+            f = np.dot(f, self.transitions) * self.emissions[:,w[i]]
+        return f.sum()
+
+    def bw(self, w):
         """"""
         n = len(w)
-        b = np.zeros((1, self.nbs))
-        for k in range(self.nbs):
-            b[0][k] = 1
-        for i in range(n-1, 0, -1):
-            b = np.dot(b, self.transitions) * self.emissions[:, w[i]]
-        if probability:
-            p = b * self.initial * self.emissions[:, w[0]]
-            return p.sum()
+        b = np.array([1] * self.nbs)
+        for i in range(n - 1, 0, -1):
+            b = np.dot(self.transitions, self.emissions[:, w[i]] * b)
         return b
+
+    def pbw(self, w):
+        """return the probability of the sequence w with a particular HMM using bw"""
+        n = len(w)
+        b = np.array([1]*self.nbs)
+        for i in range(n - 1, 0, -1):
+            b = np.dot(self.transitions, self.emissions[:, w[i]] * b)
+        p = b * self.initial * self.emissions[:, w[0]]
+        return p.sum()
 
     def viterbi(self, w):
         """return the Viterbi path of the sequence w and his probability"""
         n = len(w)
-        p = np.zeros((1, self.nbs))
+        p = self.initial[0] * self.emissions[:, w[0]]
         c = []
         for k in range(self.nbs):
-            p[0][k] = (self.initial[0][k] * self.emissions[k][w[0]])
-            c.append([k])
-            for i in range(1, n):
-                M1 = 0
-                M2 = 0
-                l_max = -1
-                max1 = 0
-                max2 = 0
-                for l in range (self.nbs):
-                    M1 = p[0][l] * self.transitions[l][k] * self.emissions[k][w[i]]
-                    M2 = p[0][l] * self.transitions[l][k]
-                    if M1 > max1:
-                        max1 = M1
-                    if M2 > max2 :
-                        max2 = M2
+            c += [[k]]
+        for i in range(1, n):
+            for k in range(self.nbs):
+                m = 0
+                l_max = 0
+                for l in range(self.nbs):
+                    a = p[l] * self.transitions[l][k]
+                    #m = max(m, a)
+                    #if m == a :
+                        #l_max = l
+                    if a > m:
+                        m = a
                         l_max = l
-                p[0][k] = max1
-                c[k] = (c[l_max] + [k])
-        proba = 0
-        ind = -1
-        for j in range (len(p[0])):
-            if p[0][j] > proba:
-                proba = p[0][j]
-                ind = j
-
-        return (c[ind], proba)
+                p[k] = m * self.emissions[k][w[i]]
+                c[k] = c[l_max] + [k]
+        return c[np.argmax(p)], max(p)
 
     @staticmethod
     def gen_HMM(nbs, nbl):
@@ -276,28 +279,28 @@ class HMM:
 
     """def logV(self, S):
         L = self.pfw(S)
-        L2 =
+        L2 ="""
 
     def BW1(self, S):
         l = len(S)
-        E = np.zeros((self.nbs, self.nbs))
-        G = np.zeros((1, self.nbs))
-        for t in range(l):
-            for i in range(self.nbs):
-                for j in range(self.nbs):
-                    E[i][j] =
-                G[0][i] =
+        KSI = np.zeros((self.nbs, self.nbs))
+        GAMMA = np.zeros((1, self.nbs))
+        for ind_mot in range(l):
+            mot = S[ind_mot]
+            m = len(mot)
+            P = np.zeros((self.nbs, m))
+            proba = np.zeros((1, m))
+            for t in range(m):
+                f = self.fw(mot[:t+1])
+                b = self.bw(mot[t+1:])
+                for k in range(self.nbs):
+                    P[k][t] = f[k] * b[k]
+                # proba[0][t] = P[:,t].sum()
+
+                    #for l in range(self.nbs):
+
 
         # réestimer le modele
-        self.initial =
-        self.transitions =
-        self.emissions ="""
-
-
-
-
-
-
 
 
 """a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
@@ -305,7 +308,6 @@ print(a.gen_rand(10))
 a.save('/home/vincent/Documents/Test_save')"""
 
 b = HMM.load('HMM.txt')
-print(b.gen_rand(10))
 #print(b)
 #print(b.nbl)
 #print()
@@ -346,7 +348,6 @@ print("forwardList", F2)
 F3 = b.pfw(c)
 print(F3)'''
 
-print(b.viterbi([0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]))
 
 """c = np.array([[0.5, 0.5, 0.6, 0.3]])
 print(c)
@@ -377,3 +378,30 @@ print(b.predit([1,1,1,1,1]))
 print(b.predit([0,0,0]))
 a = HMM(3, 3, np.array([[1., 0., 0.]]), np.array([[0., 1., 0.], [0., 0., 1.], [1., 0., 0.]]), np.array([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]))
 print(a.predit([0, 1, 2, 0]))
+
+w = [0, 1, 1]
+p = b.initial * b.emissions[:,w[0]]
+print(p)
+print(len(p))
+print(b.nbs)
+"""c=b
+
+mot = [1, 0, 0, 1, 0, 1]
+print(c.pfw(mot))
+m = len(mot)
+P = np.zeros((c.nbs, m))
+proba = np.zeros((1, m))
+for t in range(m):
+    f = c.fw(mot[:t+1])
+    b = c.bw(mot[t+1:])
+    for k in range(c.nbs):
+        P[k][t] = f[k] * b[k]
+    proba[0][t] = P[:,t].sum()
+    print(t)
+    print(proba[0][t])"""
+
+print(w)
+v = b.viterbi(w)
+
+print(v)
+print(a.viterbi([0, 1]))
