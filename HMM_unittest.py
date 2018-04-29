@@ -6,7 +6,7 @@ import unittest
 import math
 import numpy as np
 
-import HMM_Class as HMM
+import HMM_class as HMM
 
 
 class HMMTest(unittest.TestCase):
@@ -63,6 +63,12 @@ class HMMTest(unittest.TestCase):
             else:
                 self.assertEqual(1, x)
 
+    def test_Viterbi(self):
+        h = self.B
+        w = [1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        (lc, p) = h.viterbi(w)
+        #self.assertEqual(lc, [0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+        self.assertAlmostEqual(math.log2(p), -15.816435284201352)
 
 if __name__ == "__main__":
     unittest.main()
