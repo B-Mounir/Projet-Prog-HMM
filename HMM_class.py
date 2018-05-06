@@ -197,37 +197,6 @@ class HMM:
         p = b * self.initial * self.emissions[:, w[0]]
         return p.sum()
 
-    @staticmethod
-    def gen_HMM(nbs, nbl):
-        M = HMM
-        M.nbl = nbl
-        M.nbs = nbs
-        init = np.zeros((1, nbs))
-        transition = np.zeros((nbs, nbs))
-        emission = np.zeros((nbs, nbl))
-        for i in range(nbs):
-            init[0][i] = random.random()
-        init = init / init.sum()
-        M.initial = init
-
-        for i in range(nbs):
-            for j in range(nbs):
-                transition[i][j] = random.random()
-        sum_trans = transition.sum(axis=1)
-        for i in range(nbs):
-            transition[i] = transition[i] / sum_trans[i]
-        M.transitions = transition
-
-        for i in range(nbs):
-            for j in range(nbl):
-                emission[i][j] = random.random()
-        sum_emis = emission.sum(axis=1)
-        for i in range(nbs):
-            emission[i] = emission[i] / sum_emis[i]
-        M.emissions = emission
-
-        return M
-
     def predit(self, w):
         H = self.initial[0]
         for i in range(len(w)):
@@ -315,30 +284,6 @@ class HMM:
             xi[:, :, t] = xi[:, :, t] / np.sum(xi[:, :, t])
         return xi
 
-    def bw12(self, S):
-        if type(S) != list:
-            raise TypeError("S doit être une liste")
-        if len(S) == 0:
-            raise ValueError("S ne doit pas être vide")
-
-
-        pi = np.zeros(self.nbs)
-        for j in range(len(S)):
-            pi += np.array(self.gamma(S[j])[:, 0])
-
-        T = np.zeros((self.nbs, self.nbs))
-        for j in range(len(S)):
-            for t in range(len(S[j]) - 1):
-                T += self.xi(S[j])[:, :, t]
-
-        O = np.zeros((self.nbs, self.nbl))
-        for j in range(len(S)):
-            gamma = self.gamma(S[j])
-            for t in range(len(S[j])):
-                O[:, S[j][t]] += gamma[:, t]
-
-        maj = HMM(self.nbl, self.nbs, np.array([pi / pi.sum()]), (T.T / T.sum(1)).T, (O.T / O.sum(1)).T)
-        return maj
 
     @staticmethod
     def bw1(m0, S):
@@ -376,31 +321,16 @@ class HMM:
                 :return: Un HMM généré aléatoirement à nbS états et nbL sommets mis à jour N fois grâce à bw1 pour augmenter
                 la vraisemblance
                 """
-        M = HMM.gen_HMM3(nbs, nbl)
+        M = HMM.gen_HMM(nbs, nbl)
         for i in range(N):
             M = HMM.bw1(M, S)
-            #print(M)
+            print(i, ":", M)
         return M
-
-    @staticmethod
-    def bw3(nbs, nbl, w, n, m):
-        """
-                :param nbS: Nombre d'états
-                :param nbL: Nombre de sommets
-                :param S: Liste de Liste d'observables
-                :param N: Entier
-                :param M: Entier
-                :return: Le HHMi avec 0 <= i <= M-1 qui maximise la vraisemblance de S
-                """
-        Mi = []
-        for i in range(m):
-            Mi += [HMM.bw2(nbs, nbl, [w], n)]
-        return max(Mi, key=lambda x: x.pfw(w))
 
 
 ###################################
     @staticmethod
-    def bw3bis(nbS, nbL, w, N, M):
+    def bw3(nbS, nbL, w, N, M):
         """
         :param nbS: Nombre d'états
         :param nbL: Nombre de sommets
@@ -420,7 +350,7 @@ class HMM:
         return hmm
 
     @staticmethod
-    def gen_HMM3(nbs, nbl):
+    def gen_HMM(nbs, nbl):
         random.seed()
         sum = 0
         initial = []
@@ -490,17 +420,17 @@ print()
 
 
 print(HMM.bw1(b, [[0, 1], [1,0], [1, 1, 0, 0]]))
-k = HMM.gen_HMM3(2, 2)
+k = HMM.gen_HMM(2, 2)
 print("k : ", k)
-print(b)
-print(HMM.bw1(k, [[0, 1], [1,0], [1, 1, 0, 0]]))
+#print(b)
+#print(HMM.bw1(k, [[0, 1], [1,0], [1, 1, 0, 0]]))
 
 
-g = HMM.bw2(2, 2, [[0,1], [1,0], [1, 1, 0, 0]], 100)
+g = HMM.bw2(2, 2, [[0,1,0,1,0,1,0,1,0,1,0,1], [1,0,1,0,1,0,1,0,1,0,1,0]], 1000)
 print("g : ",g)
 
 
 
-i = HMM.bw3bis(2, 2, [0,1], 5, 100)
-print("i : ", i)
+#i = HMM.bw3(2, 2, [0,1,0,1,0,1,0,1,0,1,0,1], 100, 100)
+#print("i : ", i)
 
