@@ -1,11 +1,15 @@
+#################################################################################
+# Title : HMM_unittest.py                                                       #
+# Autors : AMRAM Yassine, BAZELAIRE Guillaume, BENNADJI Mounir, WEBERT Vincent  #
+# Date : 18-05-07                                                               #
+#################################################################################
+
 """
-This module contains the tests for the HMM class
+This module contains the tests for the HMM_class
 """
 
 import unittest
-import math
 import numpy as np
-
 import HMM_class as HMM
 
 
@@ -16,10 +20,9 @@ class HMMTest(unittest.TestCase):
         self.B = HMM.HMM(2, 2, np.array([[0.741, 0.259]]), np.array([[0.0115, 0.9885], [0.5084, 0.4916]]),
                          np.array([[0.4547, 0.5453], [0.2089, 0.7911]]))
 
-
     def test_HMM(self):
         self.assertRaises(ValueError, HMM.HMM, 0, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]),
-                            np.array([[0.5, 0.5], [0.7, 0.3]]))
+                          np.array([[0.5, 0.5], [0.7, 0.3]]))
         self.assertRaises(ValueError, HMM.HMM, 2, 0, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]),
                           np.array([[0.5, 0.5], [0.7, 0.3]]))
         self.assertRaises(TypeError, HMM.HMM, 2, 2, [[0.5, 0.5]], np.array([[0.9, 0.1], [0.1, 0.9]]),
@@ -43,7 +46,7 @@ class HMMTest(unittest.TestCase):
         np.testing.assert_array_equal(h.transitions, np.array([[0.9, 0.1], [0.1, 0.9]]))
         np.testing.assert_array_equal(h.emissions, np.array([[0.5, 0.5], [0.7, 0.3]]))
 
-    def test_PFw_PBw(self):
+    def test_pfw_pbw(self):
         h = self.A
         self.assertEqual(h.pfw((0,)), 0.6)
         self.assertEqual(h.pfw((1,)), 0.4)
@@ -63,15 +66,33 @@ class HMMTest(unittest.TestCase):
             else:
                 self.assertEqual(1, x)
 
-    def test_Viterbi(self):
+    def test_Vraisemblance(self):
+        h = self.A
+        s = [[0, 1], [1, 0]]
+        v = h.Vraisemblance(s)
+        self.assertEqual(v, h.pfw(s[0]) * h.pfw(s[1]))
+
+    def test_logV(self):
+        h = self.A
+        s = [[0, 1], [1, 0]]
+        v = h.logV(s)
+        self.assertEqual(v, np.log(h.pfw(s[0])) + np.log(h.pfw(s[1])))
+
+    def test_Vraisemblance_logV(self):
+        h = self.A
+        s = [[0, 1], [1, 0]]
+        u = h.Vraisemblance(s)
+        v = h.logV(s)
+        self.assertEqual(v, np.log(u))
+
+    def test_viterbi(self):
         h = self.B
         w = [1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         (lc, p) = h.viterbi(w)
         self.assertEqual(lc, [0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
         self.assertAlmostEqual(p, -15.816435284201352)
 
-
-    def test_BaumWelch(self):
+    def test_bw1(self):
         h = HMM.HMM.load("HMM1.txt")
         w = [0, 1]
         h = HMM.HMM.bw1(h, [w])

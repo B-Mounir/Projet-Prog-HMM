@@ -1,3 +1,9 @@
+#################################################################################
+# Title : HMM_class.py                                                          #
+# Autors : AMRAM Yassine, BAZELAIRE Guillaume, BENNADJI Mounir, WEBERT Vincent  #
+# Date : 18-05-07                                                               #
+#################################################################################
+
 import numpy as np
 import random
 import copy
@@ -6,7 +12,6 @@ import math
 
 class HMM:
     """Define an HMM"""
-
     def __init__(self, nbl, nbs, initial, transitions, emissions):
         # The number of letters
         self.nbl = nbl
@@ -107,8 +112,8 @@ class HMM:
     @staticmethod
     def load(adr):
         """load a text file and return the HMM corresponding"""
-        with open(adr, 'r') as HLM:
-            lines = HLM.readlines()
+        with open(adr, 'r') as file:
+            lines = file.readlines()
             nbl = int(lines[1])
             nbs = int(lines[3])
             initial = []
@@ -219,8 +224,25 @@ class HMM:
             P += [self.emissions[:, l] @ H]
         return P.index(max(P))
 
+    def Vraisemblance(self, S):
+        """
+       :param S: list of observable states sequences
+       :return: the likelihood of the list of sequences S
+       """
+        res = 1
+        for w in S:
+            res = res * self.pfw(w)
+        return res
 
-###################################
+    def logV(self, S):
+        """
+        :param S: list of observable states sequences
+        :return: the log likelihood of the list of sequences S
+        """
+        somme = 0
+        for w in S:
+            somme += np.log(self.pfw(w))
+        return somme
 
     def viterbi(self, w):
         """
@@ -252,15 +274,46 @@ class HMM:
             p_1 = copy.deepcopy(p_2)
         return chemin_2[np.argmax(p_2)], np.log(np.max(p_2))
 
-    def logV(self, S):
+    @staticmethod
+    def gen_HMM(nbs, nbl):
         """
-        :param S: list of observable states sequences
-        :return: the log likelihood of the list of sequences S
+        :param nbs: Number of states
+        :param nbl: Number of letters
+        :return: A HMM randomly generated with nbs states ans nbl letters
         """
-        somme = 0
-        for w in S:
-            somme += np.log(self.pfw(w))
-        return somme
+        random.seed()
+        sum = 0
+        initial = []
+        for i in range(nbs):
+            x = random.random()
+            initial += [x]
+            sum += x
+        for i in range(nbs):
+            initial[i] /= sum
+        transitions = []
+        for j in range(nbs):
+            transitions += [[]]
+            sum = 0
+            for i in range(nbs):
+                x = random.random()
+                transitions[j] += [x]
+                sum += x
+            for i in range(nbs):
+                transitions[j][i] /= sum
+        emissions = []
+        for j in range(nbs):
+            emissions += [[]]
+            sum = 0
+            for i in range(nbl):
+                x = random.random()
+                emissions[j] += [x]
+                sum += x
+            for i in range(nbl):
+                emissions[j][i] /= sum
+        initial = np.array([initial])
+        transitions = np.array(transitions)
+        emissions = np.array(emissions)
+        return HMM(nbl, nbs, initial, transitions, emissions)
 
     def f(self, w):
         f = np.zeros((self.nbs, len(w)))
@@ -372,43 +425,3 @@ class HMM:
                 hmm = h
         return hmm
 
-    @staticmethod
-    def gen_HMM(nbs, nbl):
-        """
-        :param nbs: Number of states
-        :param nbl: Number of letters
-        :return: A HMM randomly generated with nbs states ans nbl letters
-        """
-        random.seed()
-        sum = 0
-        initial = []
-        for i in range(nbs):
-            x = random.random()
-            initial += [x]
-            sum += x
-        for i in range(nbs):
-            initial[i] /= sum
-        transitions = []
-        for j in range(nbs):
-            transitions += [[]]
-            sum = 0
-            for i in range(nbs):
-                x = random.random()
-                transitions[j] += [x]
-                sum += x
-            for i in range(nbs):
-                transitions[j][i] /= sum
-        emissions = []
-        for j in range(nbs):
-            emissions += [[]]
-            sum = 0
-            for i in range(nbl):
-                x = random.random()
-                emissions[j] += [x]
-                sum += x
-            for i in range(nbl):
-                emissions[j][i] /= sum
-        initial = np.array([initial])
-        transitions = np.array(transitions)
-        emissions = np.array(emissions)
-        return HMM(nbl, nbs, initial, transitions, emissions)
