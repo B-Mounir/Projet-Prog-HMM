@@ -54,11 +54,11 @@ class HMMTest(unittest.TestCase):
     def test_predit(self):
         for i in range(100):
             h = HMM.HMM.gen_HMM(5, 2)
-            w = h.gen_rand(h,10)
+            w = h.gen_rand(10)
             w0 = w + [0]
             w1 = w + [1]
-            x = h.predit(h, w)
-            if h.pfw(h, w0) > h.pfw(h, w1):
+            x = h.predit(w)
+            if h.pfw(w0) > h.pfw(w1):
                 self.assertEqual(0, x)
             else:
                 self.assertEqual(1, x)

@@ -1,9 +1,7 @@
 import numpy as np
 import random
-import time
 import copy
 import math
-
 
 
 class HMM:
@@ -154,10 +152,12 @@ class HMM:
                 for c in l:
                     HLM.write(str(c) + ' ')
 
-
     @staticmethod
     def draw_multinomial(l):
-        """return the index coresponding to the result of a draw which respects the multinomial model defined by l"""
+        """
+        :param l: list of float whose sum equal to 1
+        :return: the index coresponding to the result of a draw which respects the multinomial model defined by l
+        """
         m = []
         s = 0
         for i in range(len(l)):
@@ -170,7 +170,10 @@ class HMM:
                 return i
 
     def gen_rand(self, n):
-        """return a random sequence with a length equal to n corresponding to a HMM"""
+        """
+        :param n: Integer
+        :return: a random sequence with a length equal to n corresponding to a HMM
+        """
         i = HMM.draw_multinomial(self.initial[0])
         m = []
         for j in range(n):
@@ -179,17 +182,23 @@ class HMM:
         return m
 
     def pfw(self, w):
-        """return the probability of the sequence w with a particular HMM using fw"""
+        """
+        :param w: Sequence of observable states
+        :return: the probability of the sequence w with a particular HMM using forward
+        """
         n = len(w)
         f = np.zeros((self.nbs,))
         for k in range(self.nbs):
             f[k] = self.initial[0][k] * self.emissions[k][w[0]]
         for i in range(1, n):
-            f = np.dot(f, self.transitions) * self.emissions[:,w[i]]
+            f = np.dot(f, self.transitions) * self.emissions[:, w[i]]
         return f.sum()
 
     def pbw(self, w):
-        """return the probability of the sequence w with a particular HMM using bw"""
+        """
+        :param w: Sequence of observable states
+        :return: the probability of the sequence w with a particular HMM using backward
+        """
         n = len(w)
         b = np.array([1]*self.nbs)
         for i in range(n - 1, 0, -1):
@@ -198,6 +207,10 @@ class HMM:
         return p.sum()
 
     def predit(self, w):
+        """
+        :param w: Sequence of observable states
+        :return: predict the next letter of the sequence w using a particular HMM
+        """
         H = self.initial[0]
         for i in range(len(w)):
             H = (self.transitions.T * self.emissions[:, w[i]].T) @ H
@@ -211,8 +224,8 @@ class HMM:
 
     def viterbi(self, w):
         """
-        :param w: Une liste d'observables
-        :return: La liste d'états la plus probable correspondant à ce chemin
+        :param w: Sequence of observable states
+        :return: The Viterbi path of w ans its log probability
         """
         chemin_1 = []
         chemin_2 = []
@@ -240,7 +253,10 @@ class HMM:
         return chemin_2[np.argmax(p_2)], np.log(np.max(p_2))
 
     def logV(self, S):
-        ''' calcul de la log vraisemblance'''
+        """
+        :param S: list of observable states sequences
+        :return: the log likelihood of the list of sequences S
+        """
         somme = 0
         for w in S:
             somme += np.log(self.pfw(w))
@@ -275,24 +291,13 @@ class HMM:
         xi = xi / somme
         return xi
 
-    def xi2(self, w):
-        f = self.f(w)[:, :-1]
-        b = self.b(w)[:, 1:]
-        emissions = self.emissions[:, w[1:]]
-        xi = np.einsum('kt,kl,lt,lt->klt', f, self.transitions, emissions, b)
-        for t in range(xi.shape[2]):
-            xi[:, :, t] = xi[:, :, t] / np.sum(xi[:, :, t])
-        return xi
-
-
     @staticmethod
     def bw1(m0, S):
-
-        if type(S) != list:
-            raise TypeError("S doit être une liste")
-        if len(S) == 0:
-            raise ValueError("S ne doit pas être vide")
-
+        """
+        :param m0: HMM
+        :param S: list of observable states sequences
+        :return: the HMM updated using Baum-Welch algorithm
+        """
         pi = np.zeros(m0.nbs)
         for j in range(len(S)):
             pi += np.array(m0.gamma(S[j])[:, 0])
@@ -314,35 +319,33 @@ class HMM:
     @staticmethod
     def bw2(nbs, nbl, S, N):
         """
-                :param nbS: Nombre d'états
-                :param nbL: Nombre de sommets
-                :param S: Liste de Liste d'observables
-                :param N: Entier
-                :return: Un HMM généré aléatoirement à nbS états et nbL sommets mis à jour N fois grâce à bw1 pour augmenter
-                la vraisemblance
-                """
+        :param nbs: Number of states
+        :param nbl: Number of letters
+        :param S: List of observable states sequences
+        :param N: Integer
+        :return: A HMM randomly generated with nbs states and nbl letters updated N times using bw1
+                to increase the likelihood of S
+        """
         M = HMM.gen_HMM(nbs, nbl)
         for i in range(N):
             M = HMM.bw1(M, S)
             print(i, ":", M)
         return M
 
-
-###################################
     @staticmethod
-    def bw3(nbS, nbL, w, N, M):
+    def bw3(nbs, nbl, w, N, M):
         """
-        :param nbS: Nombre d'états
-        :param nbL: Nombre de sommets
-        :param S: Liste de Liste d'observables
-        :param N: Entier
-        :param M: Entier
-        :return: Le HHMi avec 0 <= i <= M-1 qui maximise la vraisemblance de S
+        :param nbs: Number of states
+        :param nbl: Number of letters
+        :param w: Sequence of observable states
+        :param N: Integer
+        :param M: Integer
+        :return: The HMM Mi (0 <= i <= M-1) which maximize the likelihood of w
         """
         max_logV = -math.inf
         hmm = None
         for i in range(M):
-            h = HMM.bw2(nbS, nbL, [w], N)
+            h = HMM.bw2(nbs, nbl, [w], N)
             logV = h.logV([w])
             if max_logV < logV:
                 max_logV = logV
@@ -350,7 +353,32 @@ class HMM:
         return hmm
 
     @staticmethod
+    def bw4(nbs, nbl, S, N, M):
+        """
+        :param nbs: Number of states
+        :param nbl: Number of letters
+        :param S: List of observable states sequences
+        :param N: Integer
+        :param M: Integer
+        :return: The HMM Mi (0 <= i <= M-1) which maximize the likelihood of S
+        """
+        max_logV = -math.inf
+        hmm = None
+        for i in range(M):
+            h = HMM.bw2(nbs, nbl, S, N)
+            logV = h.logV(S)
+            if max_logV < logV:
+                max_logV = logV
+                hmm = h
+        return hmm
+
+    @staticmethod
     def gen_HMM(nbs, nbl):
+        """
+        :param nbs: Number of states
+        :param nbl: Number of letters
+        :return: A HMM randomly generated with nbs states ans nbl letters
+        """
         random.seed()
         sum = 0
         initial = []
@@ -384,53 +412,3 @@ class HMM:
         transitions = np.array(transitions)
         emissions = np.array(emissions)
         return HMM(nbl, nbs, initial, transitions, emissions)
-
-
-"""a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
-print(a.gen_rand(10))
-a.save('/home/vincent/Documents/Test_save')"""
-
-b = HMM.load('HMM1.txt')
-
-print(b.pfw([1, 1]))
-print(b.pbw([1, 1]))
-
-print(b)
-
-print(b.predit([1,1,1,1,1]))
-print(b.predit([0,0,0]))
-a = HMM(3, 3, np.array([[1., 0., 0.]]), np.array([[0., 1., 0.], [0., 0., 1.], [1., 0., 0.]]), np.array([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]))
-print(a.predit([0, 1, 2, 0]))
-
-
-
-
-
-w = [0,0]
-p = b.initial * b.emissions[:,w[0]]
-print(p)
-print(len(p))
-print(b.nbs)
-
-print(w)
-v = b.viterbi(w)
-print(v)
-print(a.viterbi([0]))
-print()
-
-
-print(HMM.bw1(b, [[0, 1], [1,0], [1, 1, 0, 0]]))
-k = HMM.gen_HMM(2, 2)
-print("k : ", k)
-#print(b)
-#print(HMM.bw1(k, [[0, 1], [1,0], [1, 1, 0, 0]]))
-
-
-g = HMM.bw2(2, 2, [[0,1,0,1,0,1,0,1,0,1,0,1], [1,0,1,0,1,0,1,0,1,0,1,0]], 1000)
-print("g : ",g)
-
-
-
-#i = HMM.bw3(2, 2, [0,1,0,1,0,1,0,1,0,1,0,1], 100, 100)
-#print("i : ", i)
-

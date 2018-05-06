@@ -2,6 +2,5 @@
   "HMM_unittest.py::HMMTest::test_BaumWelch": true,
   "HMM_unittest.py::HMMTest::test_HMM": true,
   "HMM_unittest.py::HMMTest::test_PFw_PBw": true,
-  "HMM_unittest.py::HMMTest::test_predit": true,
   "HMM_unittest.py::HMMTest::test_save_load": true
 }
