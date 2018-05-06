@@ -67,8 +67,26 @@ class HMMTest(unittest.TestCase):
         h = self.B
         w = [1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         (lc, p) = h.viterbi(w)
-        #self.assertEqual(lc, [0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
-        self.assertAlmostEqual(math.log2(p), -15.816435284201352)
+        self.assertEqual(lc, [0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+        self.assertAlmostEqual(p, -15.816435284201352)
+
+    def test_BaumWelch2(self):
+        h = HMM.HMM.load("HMM1.txt")
+        w = [0, 1]
+        h = h.bw12([w])
+        np.testing.assert_allclose(h.initial, np.array([[0.51724138, 0.48275862]]))
+        np.testing.assert_allclose(h.transitions, np.array([[0.9375, 0.0625], [0.15625, 0.84375]]))
+        np.testing.assert_allclose(h.emissions, np.array([[0.48, 0.52], [0.52336449, 0.47663551]]))
+        print(h)
+
+    def test_BaumWelch(self):
+        h = HMM.HMM.load("HMM1.txt")
+        w = [0, 1]
+        h = HMM.HMM.bw1(h, [w])
+        np.testing.assert_allclose(h.initial, np.array([[0.51724138, 0.48275862]]))
+        np.testing.assert_allclose(h.transitions, np.array([[0.9375, 0.0625], [0.15625, 0.84375]]))
+        np.testing.assert_allclose(h.emissions, np.array([[0.48, 0.52], [0.52336449, 0.47663551]]))
+
 
 if __name__ == "__main__":
     unittest.main()

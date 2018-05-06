@@ -1,6 +1,10 @@
 import numpy as np
 import random
+import time
+import copy
 import math
+
+
 
 class HMM:
     """Define an HMM"""
@@ -62,7 +66,7 @@ class HMM:
             raise ValueError("Value Error : shape should be (1, nbs)")
         elif x.dtype != float:
             raise ValueError("Value Error : elements of array should be float")
-        elif not np.isclose(x.sum(), [1.0], 0.001):
+        elif not np.isclose(x.sum(), [1.0], 0.01):
             raise ValueError("Value Error : sum of initial probabilities should be equal to 1")
         self.__initial = x
 
@@ -80,7 +84,7 @@ class HMM:
         elif x.dtype != float:
             raise ValueError("Value Error : elements of array should be float")
         for y in x.sum(axis=1):
-            if not np.isclose(y, [1.0], 0.001):
+            if not np.isclose(y, [1.0], 0.01):
                 raise ValueError("Value Error : sum of transitions' probabilities from each state should be 1")
         self.__transitions = x
 
@@ -98,7 +102,7 @@ class HMM:
         elif x.dtype != float:
             raise ValueError("Value Error : elements of array should be float")
         for y in x.sum(axis=1):
-            if not np.isclose(y, [1.0], 0.001):
+            if not np.isclose(y, [1.0], 0.01):
                 raise ValueError("Value Error : sum of transitions' probabilities from each state should be 1")
         self.__emissions = x
 
@@ -174,19 +178,6 @@ class HMM:
             i = HMM.draw_multinomial(self.transitions[i])
         return m
 
-    def fw(self, w):
-        """"""
-        if isinstance(w,np.ndarray):
-            w = w[0]
-        n = len(w)
-        f = np.zeros((self.nbs,))
-        for k in range(self.nbs):
-            f[k] = self.initial[0][k] * self.emissions[k][w[0]]
-        f = np.array([])
-        for i in range(1, n):
-            f = np.dot(f, self.transitions) * self.emissions[:,w[i]]
-        return f
-
     def pfw(self, w):
         """return the probability of the sequence w with a particular HMM using fw"""
         n = len(w)
@@ -197,14 +188,6 @@ class HMM:
             f = np.dot(f, self.transitions) * self.emissions[:,w[i]]
         return f.sum()
 
-    def bw(self, w):
-        """"""
-        n = len(w)
-        b = np.array([1] * self.nbs)
-        for i in range(n - 1, 0, -1):
-            b = np.dot(self.transitions, self.emissions[:, w[i]] * b)
-        return b
-
     def pbw(self, w):
         """return the probability of the sequence w with a particular HMM using bw"""
         n = len(w)
@@ -213,29 +196,6 @@ class HMM:
             b = np.dot(self.transitions, self.emissions[:, w[i]] * b)
         p = b * self.initial * self.emissions[:, w[0]]
         return p.sum()
-
-    def viterbi(self, w):
-        """return the Viterbi path of the sequence w and his probability"""
-        n = len(w)
-        p = self.initial[0] * self.emissions[:, w[0]]
-        c = []
-        for k in range(self.nbs):
-            c += [[k]]
-        for i in range(1, n):
-            for k in range(self.nbs):
-                m = 0
-                l_max = 0
-                for l in range(self.nbs):
-                    a = p[l] * self.transitions[l][k]
-                    #m = max(m, a)
-                    #if m == a :
-                        #l_max = l
-                    if a > m:
-                        m = a
-                        l_max = l
-                p[k] = m * self.emissions[k][w[i]]
-                c[k] = c[l_max] + [k]
-        return c[np.argmax(p)], max(p)
 
     @staticmethod
     def gen_HMM(nbs, nbl):
@@ -277,97 +237,230 @@ class HMM:
             P += [self.emissions[:, l] @ H]
         return P.index(max(P))
 
-    """def logV(self, S):
-        L = self.pfw(S)
-        L2 ="""
 
-    def BW1(self, S):
-        l = len(S)
-        KSI = np.zeros((self.nbs, self.nbs))
-        GAMMA = np.zeros((1, self.nbs))
-        for ind_mot in range(l):
-            mot = S[ind_mot]
-            m = len(mot)
-            P = np.zeros((self.nbs, m))
-            proba = np.zeros((1, m))
-            for t in range(m):
-                f = self.fw(mot[:t+1])
-                b = self.bw(mot[t+1:])
-                for k in range(self.nbs):
-                    P[k][t] = f[k] * b[k]
-                # proba[0][t] = P[:,t].sum()
+###################################
 
-                    #for l in range(self.nbs):
+    def viterbi(self, w):
+        """
+        :param w: Une liste d'observables
+        :return: La liste d'états la plus probable correspondant à ce chemin
+        """
+        chemin_1 = []
+        chemin_2 = []
+        liste_etats = []
+        p_1 = self.initial[0] * self.emissions[:, w[0]]
+        p_2 = self.initial[0] * self.emissions[:, w[0]]
+        for i in range(self.nbs):
+            chemin_1 += [[i]]
+            chemin_2 += [[i]]
+            liste_etats += [i]
+        for i in range(1, len(w)):
+            for k in range(self.nbs):
+                m = 0
+                j_retenu = 0
+                for j in range(self.nbs):
+                    a = m
+                    b = p_1[j] * self.transitions[j, k]
+                    m = max(a, b)
+                    if m == b:
+                        j_retenu = j
+                chemin_2[k] = chemin_1[j_retenu] + [k]
+                p_2[k] = m * self.emissions[k, w[i]]
+            chemin_1 = copy.deepcopy(chemin_2)
+            p_1 = copy.deepcopy(p_2)
+        return chemin_2[np.argmax(p_2)], np.log(np.max(p_2))
+
+    def logV(self, S):
+        ''' calcul de la log vraisemblance'''
+        somme = 0
+        for w in S:
+            somme += np.log(self.pfw(w))
+        return somme
+
+    def f(self, w):
+        f = np.zeros((self.nbs, len(w)))
+        f[:, 0] = self.initial * self.emissions[:, w[0]]
+        for i in range(1, len(w)):
+            f[:, i] = np.dot(f[:, i - 1], self.transitions) * self.emissions[:, w[i]]
+        return f
+
+    def b(self, w):
+        b = np.zeros((self.nbs, len(w)))
+        b[:, len(w) - 1] = np.array([1] * self.nbs)
+        for i in range(len(w) - 2, -1, -1):
+            b[:, i] = np.dot(self.transitions, self.emissions[:, w[i + 1]] * b[:, i + 1])
+        return b
+
+    def gamma(self, w):
+        f = self.f(w)
+        b = self.b(w)
+        return (f * b) / np.einsum('kt,kt->t', b, f)
+
+    def xi(self, w):
+        f = self.f(w)[:, :-1]
+        b = self.b(w)[:, 1:]
+        emissions = self.emissions[:, w[1:]]
+        xi = np.einsum('kt,kl,lt,lt->klt', f, self.transitions, emissions, b)
+        v = np.einsum('kt,kl,lt,lt->t', f, self.transitions, emissions, b)
+        somme = np.tile(v, (self.nbs, self.nbs, 1))
+        xi = xi / somme
+        return xi
+
+    def xi2(self, w):
+        f = self.f(w)[:, :-1]
+        b = self.b(w)[:, 1:]
+        emissions = self.emissions[:, w[1:]]
+        xi = np.einsum('kt,kl,lt,lt->klt', f, self.transitions, emissions, b)
+        for t in range(xi.shape[2]):
+            xi[:, :, t] = xi[:, :, t] / np.sum(xi[:, :, t])
+        return xi
+
+    def bw12(self, S):
+        if type(S) != list:
+            raise TypeError("S doit être une liste")
+        if len(S) == 0:
+            raise ValueError("S ne doit pas être vide")
 
 
-        # réestimer le modele
+        pi = np.zeros(self.nbs)
+        for j in range(len(S)):
+            pi += np.array(self.gamma(S[j])[:, 0])
+
+        T = np.zeros((self.nbs, self.nbs))
+        for j in range(len(S)):
+            for t in range(len(S[j]) - 1):
+                T += self.xi(S[j])[:, :, t]
+
+        O = np.zeros((self.nbs, self.nbl))
+        for j in range(len(S)):
+            gamma = self.gamma(S[j])
+            for t in range(len(S[j])):
+                O[:, S[j][t]] += gamma[:, t]
+
+        maj = HMM(self.nbl, self.nbs, np.array([pi / pi.sum()]), (T.T / T.sum(1)).T, (O.T / O.sum(1)).T)
+        return maj
+
+    @staticmethod
+    def bw1(m0, S):
+
+        if type(S) != list:
+            raise TypeError("S doit être une liste")
+        if len(S) == 0:
+            raise ValueError("S ne doit pas être vide")
+
+        pi = np.zeros(m0.nbs)
+        for j in range(len(S)):
+            pi += np.array(m0.gamma(S[j])[:, 0])
+
+        T = np.zeros((m0.nbs, m0.nbs))
+        for j in range(len(S)):
+            for t in range(len(S[j]) - 1):
+                T += m0.xi(S[j])[:, :, t]
+
+        O = np.zeros((m0.nbs, m0.nbl))
+        for j in range(len(S)):
+            gamma = m0.gamma(S[j])
+            for t in range(len(S[j])):
+                O[:, S[j][t]] += gamma[:, t]
+
+        maj = HMM(m0.nbl, m0.nbs, np.array([pi / pi.sum()]), (T.T / T.sum(1)).T, (O.T / O.sum(1)).T)
+        return maj
+
+    @staticmethod
+    def bw2(nbs, nbl, S, N):
+        """
+                :param nbS: Nombre d'états
+                :param nbL: Nombre de sommets
+                :param S: Liste de Liste d'observables
+                :param N: Entier
+                :return: Un HMM généré aléatoirement à nbS états et nbL sommets mis à jour N fois grâce à bw1 pour augmenter
+                la vraisemblance
+                """
+        M = HMM.gen_HMM3(nbs, nbl)
+        for i in range(N):
+            M = HMM.bw1(M, S)
+            #print(M)
+        return M
+
+    @staticmethod
+    def bw3(nbs, nbl, w, n, m):
+        """
+                :param nbS: Nombre d'états
+                :param nbL: Nombre de sommets
+                :param S: Liste de Liste d'observables
+                :param N: Entier
+                :param M: Entier
+                :return: Le HHMi avec 0 <= i <= M-1 qui maximise la vraisemblance de S
+                """
+        Mi = []
+        for i in range(m):
+            Mi += [HMM.bw2(nbs, nbl, [w], n)]
+        return max(Mi, key=lambda x: x.pfw(w))
+
+
+###################################
+    @staticmethod
+    def bw3bis(nbS, nbL, w, N, M):
+        """
+        :param nbS: Nombre d'états
+        :param nbL: Nombre de sommets
+        :param S: Liste de Liste d'observables
+        :param N: Entier
+        :param M: Entier
+        :return: Le HHMi avec 0 <= i <= M-1 qui maximise la vraisemblance de S
+        """
+        max_logV = -math.inf
+        hmm = None
+        for i in range(M):
+            h = HMM.bw2(nbS, nbL, [w], N)
+            logV = h.logV([w])
+            if max_logV < logV:
+                max_logV = logV
+                hmm = h
+        return hmm
+
+    @staticmethod
+    def gen_HMM3(nbs, nbl):
+        random.seed()
+        sum = 0
+        initial = []
+        for i in range(nbs):
+            x = random.random()
+            initial += [x]
+            sum += x
+        for i in range(nbs):
+            initial[i] /= sum
+        transitions = []
+        for j in range(nbs):
+            transitions += [[]]
+            sum = 0
+            for i in range(nbs):
+                x = random.random()
+                transitions[j] += [x]
+                sum += x
+            for i in range(nbs):
+                transitions[j][i] /= sum
+        emissions = []
+        for j in range(nbs):
+            emissions += [[]]
+            sum = 0
+            for i in range(nbl):
+                x = random.random()
+                emissions[j] += [x]
+                sum += x
+            for i in range(nbl):
+                emissions[j][i] /= sum
+        initial = np.array([initial])
+        transitions = np.array(transitions)
+        emissions = np.array(emissions)
+        return HMM(nbl, nbs, initial, transitions, emissions)
 
 
 """a = HMM(2, 2, np.array([[0.5, 0.5]]), np.array([[0.9, 0.1], [0.1, 0.9]]), np.array([[0.5, 0.5],[0.7, 0.3]]))
 print(a.gen_rand(10))
 a.save('/home/vincent/Documents/Test_save')"""
 
-b = HMM.load('HMM.txt')
-#print(b)
-#print(b.nbl)
-#print()
-#print(b.nbs)
-#print()
-#print(b.initial)
-#print()
-#print(b.transitions)
-#print()
-#print(b.emissions)
-#print()
-
-'''n=10
-i = HMM.draw_multinomial(b.initial[0])
-print(i)
-m = []
-print(m)
-for j in range(n):
-    print("j:", j)
-    m.append(HMM.draw_multinomial(b.emissions[i]))
-    print(m)
-    i = HMM.draw_multinomial(b.transitions[i])
-    print(i)
-print("fin:", m)
-
-c = b.gen_rand(10)
-print("c:", c)
-w = np.array([[0, 1]])
-print(w)
-F1 = b.pfw(w)
-print("forwardArray", F1)
-
-z = [1, 1, 1]
-print(z)
-F2 = b.pfw(z)
-print("forwardList", F2)
-
-F3 = b.pfw(c)
-print(F3)'''
-
-
-"""c = np.array([[0.5, 0.5, 0.6, 0.3]])
-print(c)
-d = c / c.sum()
-print(d)
-print(d.sum())
-
-e  =  np.array([[0.5, 0.5, 0.1, 0.4],[0.7, 0.3, 0.8, 0.5], [0.9, 0.4, 0.1, 0.4],[0.3, 0.3, 0.2, 0.1]])
-sum_trans = e.sum(axis=1)
-for i in range(4):
-    e[i] = e[i] / sum_trans[i]
-    print("somme ligne", i,":",e[i].sum())
-print(e)"""
-
-"""M = HMM.gen_HMM(2, 3)
-print("nbs", M.nbs)
-print("nbl", M.nbl)
-print("init", M.initial, M.initial.sum())
-print("trans", M.transitions, M.transitions.sum(axis=1))
-print("emis", M.emissions, M.emissions.sum(axis=1))"""
+b = HMM.load('HMM1.txt')
 
 print(b.pfw([1, 1]))
 print(b.pbw([1, 1]))
@@ -379,29 +472,35 @@ print(b.predit([0,0,0]))
 a = HMM(3, 3, np.array([[1., 0., 0.]]), np.array([[0., 1., 0.], [0., 0., 1.], [1., 0., 0.]]), np.array([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]))
 print(a.predit([0, 1, 2, 0]))
 
-w = [0, 1, 1]
+
+
+
+
+w = [0,0]
 p = b.initial * b.emissions[:,w[0]]
 print(p)
 print(len(p))
 print(b.nbs)
-"""c=b
-
-mot = [1, 0, 0, 1, 0, 1]
-print(c.pfw(mot))
-m = len(mot)
-P = np.zeros((c.nbs, m))
-proba = np.zeros((1, m))
-for t in range(m):
-    f = c.fw(mot[:t+1])
-    b = c.bw(mot[t+1:])
-    for k in range(c.nbs):
-        P[k][t] = f[k] * b[k]
-    proba[0][t] = P[:,t].sum()
-    print(t)
-    print(proba[0][t])"""
 
 print(w)
 v = b.viterbi(w)
-
 print(v)
-print(a.viterbi([0, 1]))
+print(a.viterbi([0]))
+print()
+
+
+print(HMM.bw1(b, [[0, 1], [1,0], [1, 1, 0, 0]]))
+k = HMM.gen_HMM3(2, 2)
+print("k : ", k)
+print(b)
+print(HMM.bw1(k, [[0, 1], [1,0], [1, 1, 0, 0]]))
+
+
+g = HMM.bw2(2, 2, [[0,1], [1,0], [1, 1, 0, 0]], 100)
+print("g : ",g)
+
+
+
+i = HMM.bw3bis(2, 2, [0,1], 5, 100)
+print("i : ", i)
+
