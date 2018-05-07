@@ -51,7 +51,7 @@ class HMM:
     def nbs(self, x):
         """Modify the numbers of states"""
         if not isinstance(x, int):
-            raise TypeError("Value Error : please enter an integer")
+            raise TypeError("Value Error : should be an integer")
         elif x <= 0:
             raise ValueError("Value Error : should be superior to 0")
         self.__nbs = x
@@ -315,9 +315,11 @@ class HMM:
         emissions = np.array(emissions)
         return HMM(nbl, nbs, initial, transitions, emissions)
 
+    # Baum-Welch :
+
     def f(self, w):
         f = np.zeros((self.nbs, len(w)))
-        f[:, 0] = self.initial * self.emissions[:, w[0]]
+        f[:, 0] = self.initial[0] * self.emissions[:, w[0]]
         for i in range(1, len(w)):
             f[:, i] = np.dot(f[:, i - 1], self.transitions) * self.emissions[:, w[i]]
         return f
@@ -354,18 +356,15 @@ class HMM:
         pi = np.zeros(m0.nbs)
         for j in range(len(S)):
             pi += np.array(m0.gamma(S[j])[:, 0])
-
         T = np.zeros((m0.nbs, m0.nbs))
         for j in range(len(S)):
             for t in range(len(S[j]) - 1):
                 T += m0.xi(S[j])[:, :, t]
-
         O = np.zeros((m0.nbs, m0.nbl))
         for j in range(len(S)):
             gamma = m0.gamma(S[j])
             for t in range(len(S[j])):
                 O[:, S[j][t]] += gamma[:, t]
-
         maj = HMM(m0.nbl, m0.nbs, np.array([pi / pi.sum()]), (T.T / T.sum(1)).T, (O.T / O.sum(1)).T)
         return maj
 
@@ -382,7 +381,7 @@ class HMM:
         M = HMM.gen_HMM(nbs, nbl)
         for i in range(N):
             M = HMM.bw1(M, S)
-            print(i, ":", M)
+            # print(i, ":", M)
         return M
 
     @staticmethod
@@ -393,7 +392,7 @@ class HMM:
         :param w: Sequence of observable states
         :param N: Integer
         :param M: Integer
-        :return: The HMM Mi (0 <= i <= M-1) which maximize the likelihood of w
+        :return: The HMM Mi (0 <= i <= M-1) genrated with bw2 which maximize the likelihood of w
         """
         max_logV = -math.inf
         hmm = None
@@ -413,7 +412,7 @@ class HMM:
         :param S: List of observable states sequences
         :param N: Integer
         :param M: Integer
-        :return: The HMM Mi (0 <= i <= M-1) which maximize the likelihood of S
+        :return: The HMM Mi (0 <= i <= M-1) genrated with bw2 which maximize the likelihood of S
         """
         max_logV = -math.inf
         hmm = None
@@ -424,4 +423,3 @@ class HMM:
                 max_logV = logV
                 hmm = h
         return hmm
-
