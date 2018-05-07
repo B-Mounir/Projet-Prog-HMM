@@ -46,10 +46,15 @@ class HMMTest(unittest.TestCase):
         np.testing.assert_array_equal(h.transitions, np.array([[0.9, 0.1], [0.1, 0.9]]))
         np.testing.assert_array_equal(h.emissions, np.array([[0.5, 0.5], [0.7, 0.3]]))
 
+    def test_gen_rand(self):
+        h = self.A
+        w = h.gen_rand(3)
+        self.assertIn(w, [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]])
+
     def test_pfw_pbw(self):
         h = self.A
-        self.assertEqual(h.pfw((0,)), 0.6)
-        self.assertEqual(h.pfw((1,)), 0.4)
+        self.assertEqual(h.pfw([0]), 0.6)
+        self.assertEqual(h.pfw([1]), 0.4)
         for i in range(100):
             w = h.gen_rand(10)
             self.assertAlmostEqual(h.pfw(w), h.pbw(w))

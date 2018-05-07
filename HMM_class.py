@@ -160,9 +160,16 @@ class HMM:
     @staticmethod
     def draw_multinomial(l):
         """
-        :param l: list of float whose sum equal to 1
+        :param l: array of probabilities (float) whose sum is equal to 1
         :return: the index coresponding to the result of a draw which respects the multinomial model defined by l
         """
+        if not isinstance(l, np.ndarray):
+            raise TypeError("Value Error : should be an array")
+        elif not np.isclose(l.sum(), [1.0], 0.01):
+            raise ValueError("Value Error : sum of probabilities should be equal to 1")
+        elif l.ndim != 1:
+            raise ValueError("Value Error : should be a 1 dimension array")
+
         m = []
         s = 0
         for i in range(len(l)):
@@ -179,6 +186,9 @@ class HMM:
         :param n: Integer
         :return: a random sequence with a length equal to n corresponding to a HMM
         """
+        if not isinstance(n, int):
+            raise TypeError("Value Error : should be an integer")
+
         i = HMM.draw_multinomial(self.initial[0])
         m = []
         for j in range(n):
@@ -191,6 +201,9 @@ class HMM:
         :param w: Sequence of observable states
         :return: the probability of the sequence w with a particular HMM using forward
         """
+        if not isinstance(w, list):
+            raise TypeError("Value Error : should be a list")
+
         n = len(w)
         f = np.zeros((self.nbs,))
         for k in range(self.nbs):
@@ -204,6 +217,9 @@ class HMM:
         :param w: Sequence of observable states
         :return: the probability of the sequence w with a particular HMM using backward
         """
+        if not isinstance(w, list):
+            raise TypeError("Value Error : should be a list")
+
         n = len(w)
         b = np.array([1]*self.nbs)
         for i in range(n - 1, 0, -1):
@@ -216,6 +232,9 @@ class HMM:
         :param w: Sequence of observable states
         :return: predict the next letter of the sequence w using a particular HMM
         """
+        if not isinstance(w, list):
+            raise TypeError("Value Error : should be a list")
+
         H = self.initial[0]
         for i in range(len(w)):
             H = (self.transitions.T * self.emissions[:, w[i]].T) @ H
@@ -229,6 +248,12 @@ class HMM:
        :param S: list of observable states sequences
        :return: the likelihood of the list of sequences S
        """
+        if not isinstance(S, list):
+            raise TypeError("Value Error : should be a list")
+        for w in S:
+            if not isinstance(w, list):
+                raise TypeError("Value Error : should be a list")
+
         res = 1
         for w in S:
             res = res * self.pfw(w)
@@ -239,6 +264,12 @@ class HMM:
         :param S: list of observable states sequences
         :return: the log likelihood of the list of sequences S
         """
+        if not isinstance(S, list):
+            raise TypeError("Value Error : should be a list")
+        for w in S:
+            if not isinstance(w, list):
+                raise TypeError("Value Error : should be a list")
+
         somme = 0
         for w in S:
             somme += np.log(self.pfw(w))
@@ -249,30 +280,34 @@ class HMM:
         :param w: Sequence of observable states
         :return: The Viterbi path of w ans its log probability
         """
-        chemin_1 = []
-        chemin_2 = []
+        if not isinstance(w, list):
+            raise TypeError("Value Error : should be a list")
+
+        n = len(w)
+        c_1 = []
+        c_2 = []
         liste_etats = []
         p_1 = self.initial[0] * self.emissions[:, w[0]]
         p_2 = self.initial[0] * self.emissions[:, w[0]]
         for i in range(self.nbs):
-            chemin_1 += [[i]]
-            chemin_2 += [[i]]
+            c_1 += [[i]]
+            c_2 += [[i]]
             liste_etats += [i]
-        for i in range(1, len(w)):
+        for i in range(1, n):
             for k in range(self.nbs):
                 m = 0
-                j_retenu = 0
-                for j in range(self.nbs):
+                l_max = 0
+                for l in range(self.nbs):
                     a = m
-                    b = p_1[j] * self.transitions[j, k]
+                    b = p_1[l] * self.transitions[l, k]
                     m = max(a, b)
                     if m == b:
-                        j_retenu = j
-                chemin_2[k] = chemin_1[j_retenu] + [k]
+                        l_max = l
+                c_2[k] = c_1[l_max] + [k]
                 p_2[k] = m * self.emissions[k, w[i]]
-            chemin_1 = copy.deepcopy(chemin_2)
+            c_1 = copy.deepcopy(c_2)
             p_1 = copy.deepcopy(p_2)
-        return chemin_2[np.argmax(p_2)], np.log(np.max(p_2))
+        return c_2[np.argmax(p_2)], np.log(np.max(p_2))
 
     @staticmethod
     def gen_HMM(nbs, nbl):
@@ -281,6 +316,11 @@ class HMM:
         :param nbl: Number of letters
         :return: A HMM randomly generated with nbs states ans nbl letters
         """
+        if not isinstance(nbs, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(nbl, int):
+            raise TypeError("Value Error : should be an integer")
+
         random.seed()
         sum = 0
         initial = []
@@ -318,6 +358,9 @@ class HMM:
     # Baum-Welch :
 
     def f(self, w):
+        if not isinstance(w, list):
+            raise TypeError("Value Error : should be a list")
+
         f = np.zeros((self.nbs, len(w)))
         f[:, 0] = self.initial[0] * self.emissions[:, w[0]]
         for i in range(1, len(w)):
@@ -325,6 +368,9 @@ class HMM:
         return f
 
     def b(self, w):
+        if not isinstance(w, list):
+            raise TypeError("Value Error : should be a list")
+
         b = np.zeros((self.nbs, len(w)))
         b[:, len(w) - 1] = np.array([1] * self.nbs)
         for i in range(len(w) - 2, -1, -1):
@@ -332,11 +378,17 @@ class HMM:
         return b
 
     def gamma(self, w):
+        if not isinstance(w, list):
+            raise TypeError("Value Error : should be a list")
+
         f = self.f(w)
         b = self.b(w)
         return (f * b) / np.einsum('kt,kt->t', b, f)
 
     def xi(self, w):
+        if not isinstance(w, list):
+            raise TypeError("Value Error : should be a list")
+
         f = self.f(w)[:, :-1]
         b = self.b(w)[:, 1:]
         emissions = self.emissions[:, w[1:]]
@@ -353,6 +405,14 @@ class HMM:
         :param S: list of observable states sequences
         :return: the HMM updated using Baum-Welch algorithm
         """
+        if not isinstance(S, list):
+            raise TypeError("Value Error : should be a list")
+        for w in S:
+            if not isinstance(w, list):
+                raise TypeError("Value Error : should be a list")
+        if not isinstance(m0, HMM):
+            raise TypeError("Value Error : should be a HMM")
+
         pi = np.zeros(m0.nbs)
         for j in range(len(S)):
             pi += np.array(m0.gamma(S[j])[:, 0])
@@ -371,13 +431,25 @@ class HMM:
     @staticmethod
     def bw2(nbs, nbl, S, N):
         """
-        :param nbs: Number of states
-        :param nbl: Number of letters
+        :param nbs: Number of states (Integer)
+        :param nbl: Number of letters (Integer)
         :param S: List of observable states sequences
         :param N: Integer
         :return: A HMM randomly generated with nbs states and nbl letters updated N times using bw1
                 to increase the likelihood of S
         """
+        if not isinstance(nbs, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(nbl, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(N, int):
+            raise TypeError("Value Error : should be an integer")
+        if not isinstance(S, list):
+            raise TypeError("Value Error : should be a list")
+        for w in S:
+            if not isinstance(w, list):
+                raise TypeError("Value Error : should be a list")
+
         M = HMM.gen_HMM(nbs, nbl)
         for i in range(N):
             M = HMM.bw1(M, S)
@@ -387,13 +459,24 @@ class HMM:
     @staticmethod
     def bw3(nbs, nbl, w, N, M):
         """
-        :param nbs: Number of states
-        :param nbl: Number of letters
+        :param nbs: Number of states (Integer)
+        :param nbl: Number of letters (Integer)
         :param w: Sequence of observable states
         :param N: Integer
         :param M: Integer
         :return: The HMM Mi (0 <= i <= M-1) genrated with bw2 which maximize the likelihood of w
         """
+        if not isinstance(nbs, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(nbl, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(N, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(M, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(w, list):
+            raise TypeError("Value Error : should be a list")
+
         max_logV = -math.inf
         hmm = None
         for i in range(M):
@@ -407,13 +490,27 @@ class HMM:
     @staticmethod
     def bw4(nbs, nbl, S, N, M):
         """
-        :param nbs: Number of states
-        :param nbl: Number of letters
+        :param nbs: Number of states (Integer)
+        :param nbl: Number of letters (Integer)
         :param S: List of observable states sequences
         :param N: Integer
         :param M: Integer
         :return: The HMM Mi (0 <= i <= M-1) genrated with bw2 which maximize the likelihood of S
         """
+        if not isinstance(nbs, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(nbl, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(N, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(M, int):
+            raise TypeError("Value Error : should be an integer")
+        if not isinstance(S, list):
+            raise TypeError("Value Error : should be a list")
+        for w in S:
+            if not isinstance(w, list):
+                raise TypeError("Value Error : should be a list")
+
         max_logV = -math.inf
         hmm = None
         for i in range(M):
