@@ -98,7 +98,7 @@ class HMMTest(unittest.TestCase):
         self.assertAlmostEqual(p, -15.816435284201352)
 
     def test_bw1(self):
-        h = HMM.HMM.load("HMM1.txt")
+        h = self.A
         w = [0, 1]
         h = HMM.HMM.bw1(h, [w])
         np.testing.assert_allclose(h.initial, np.array([[0.51724138, 0.48275862]]))
