@@ -453,7 +453,6 @@ class HMM:
         M = HMM.gen_HMM(nbs, nbl)
         for i in range(N):
             M = HMM.bw1(M, S)
-            # print(i, ":", M)
         return M
 
     @staticmethod
@@ -495,7 +494,7 @@ class HMM:
         :param S: List of observable states sequences
         :param N: Integer
         :param M: Integer
-        :return: The HMM Mi (0 <= i <= M-1) genrated with bw2 which maximize the likelihood of S
+        :return: The HMM Mi (0 <= i <= M-1) generated with bw2 which maximize the likelihood of S
         """
         if not isinstance(nbs, int):
             raise TypeError("Value Error : should be an integer")
@@ -515,6 +514,75 @@ class HMM:
         hmm = None
         for i in range(M):
             h = HMM.bw2(nbs, nbl, S, N)
+            logV = h.logV(S)
+            if max_logV < logV:
+                max_logV = logV
+                hmm = h
+        return hmm
+
+    @staticmethod
+    def bw2_limite(nbs, nbl, S, limite):
+        """
+        :param nbs: Number of states (Integer)
+        :param nbl: Number of letters (Integer)
+        :param S: List of observable states sequences
+        :param limite: Number of iterations where the likelihood is stabilised (Integer)
+        :return: A HMM randomly generated with nbs states and nbl letters updated using bw1
+                while the likelihood of S is not stabilised
+        """
+        if not isinstance(nbs, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(nbl, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(limite, int):
+            raise TypeError("Value Error : should be an integer")
+        if not isinstance(S, list):
+            raise TypeError("Value Error : should be a list")
+        for w in S:
+            if not isinstance(w, list):
+                raise TypeError("Value Error : should be a list")
+
+        M = HMM.gen_HMM(nbs, nbl)
+        l = limite
+        log_vs = np.zeros((l,))
+        i = 0
+        logv = 10
+        while not np.allclose(log_vs, logv, atol=5):
+            M = HMM.bw1(M, S)
+            logv = M.logV(S)
+            log_vs[i % l] = logv
+            i = i + 1
+        return M
+
+    @staticmethod
+    def bw4_limite(nbs, nbl, S, limite, M):
+        """
+        :param nbs: Number of states (Integer)
+        :param nbl: Number of letters (Integer)
+        :param S: List of observable states sequences
+        :param limite: Integer
+        :param limite: Integer
+        :param M: Integer
+        :return: The HMM Mi (0 <= i <= M-1) generated with bw2_limite which maximize the likelihood of S
+        """
+        if not isinstance(nbs, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(nbl, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(limite, int):
+            raise TypeError("Value Error : should be an integer")
+        elif not isinstance(M, int):
+            raise TypeError("Value Error : should be an integer")
+        if not isinstance(S, list):
+            raise TypeError("Value Error : should be a list")
+        for w in S:
+            if not isinstance(w, list):
+                raise TypeError("Value Error : should be a list")
+
+        max_logV = -math.inf
+        hmm = None
+        for i in range(M):
+            h = HMM.bw2_limite(nbs, nbl, S, limite)
             logV = h.logV(S)
             if max_logV < logV:
                 max_logV = logV
