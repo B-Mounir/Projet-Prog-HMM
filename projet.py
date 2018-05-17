@@ -9,6 +9,7 @@ import math
 import HMM_class as HMM
 
 
+
 def xval(nbFolds, S, nbL, nbSMin, nbSMax, nbIter, nbInit):
     n = len(S)
     l = np.random.permutation(n)
@@ -31,7 +32,7 @@ def xval(nbFolds, S, nbL, nbSMin, nbSMax, nbIter, nbInit):
             nbSOpt = nbS
     return lvOpt, nbSOpt
 
-def xval_limite(nbFolds, S, nbL, nbSMin, nbSMax, limite, nbInit):
+def xval_limite(nbFolds, S, nbL, nbSMin, nbSMax, limite, tolerance, nbInit):
     n = len(S)
     l = np.random.permutation(n)
     lvOpt = -math.inf
@@ -46,14 +47,14 @@ def xval_limite(nbFolds, S, nbL, nbSMin, nbSMax, limite, nbInit):
             learn = [S[l[j]] for j in range(f1)]
             learn += [S[l[j]] for j in range(f2, n)]
             test = [S[l[j]] for j in range(f1, f2)]
-            h = HMM.HMM.bw4_limite(nbS, nbL, learn, limite, nbInit)
+            h = HMM.HMM.bw4_limite(nbS, nbL, learn, limite, tolerance, nbInit)
             lv += h.logV(test)
         if lv > lvOpt:
             lvOpt = lv
             nbSOpt = nbS
     return lvOpt, nbSOpt
 
-def liste_de_sequences(adr):
+def liste_sequences_fichier(adr):
     file = open(adr)
     S = []
     for mot in file:
@@ -64,47 +65,46 @@ def liste_de_sequences(adr):
         S += [w[:-1]]
     return S
 
-def liste_de_sequences2(adr):
-    with open(adr, 'r') as file:
-        lines = file.readlines()
-        S = []
-        for i in range (len(lines)):
-            j = 0
-            w = []
-            while lines[i][j] != chr(10) or i == len(lines)-1:
-                w += [ord(lines[i][j]) - 97]
-            S += [w]
-    return S
+def liste_sequences(S):
+    L = []
+    for w in S:
+        w = []
+        for c in w:
+            w += [ord(c) - 97]
+        w = w[:-1]
+        L += [w]
+    return L
 
-"""anglais2000 = liste_de_sequences("anglais2000")
-xval_anglais = xval(5, anglais2000, 26, 1, 10, 10, 10)
-lvOpt_anglais = xval_anglais[0]
-nbSOpt_anglais = xval_anglais[1]
-print("lvOpt_anglais :", lvOpt_anglais)
-print("nbSOpt_anglais :", nbSOpt_anglais)
-print()
+def liste_mots(S):
+    L = []
+    for w in S:
+        mot = ''
+        for c in w:
+            char = chr(c + 97)
+            mot += char
+        L += [mot]
+    return L
 
-allemand2000 = liste_de_sequences("allemand2000")
-xval_allemand = xval(5, allemand2000, 26, 1, 10, 10, 10)
-lvOpt_allemand = xval_allemand[0]
-nbSOpt_allemand = xval_allemand[1]
-print("lvOpt_allemand :", lvOpt_allemand)
-print("nbSOpt_allemand :", nbSOpt_allemand)
-print()
-"""
+def langue_probable(w):
+    s = liste_sequences([w])
+    HMMs = [HMM_allemand, HMM_espagnol, HMM_anglais]
+    Langue = ['Allemand', 'Espagnol', 'Anglais']
+    logps = []
+    for M in HMMs:
+        logp = M.log_vraissemblance([w])
+        logps += [logp]
+    return Langue[logps.index(max(logps))]
 
-anglais2000 = liste_de_sequences("anglais2000")
-xval_anglais = xval_limite(5, anglais2000, 26, 9, 20, 10, 10)
-lvOpt_anglais = xval_anglais[0]
-nbSOpt_anglais = xval_anglais[1]
-print("lvOpt_anglais :", lvOpt_anglais)
-print("nbSOpt_anglais :", nbSOpt_anglais)
-print()
+allemand2000 = liste_sequences_fichier("allemand2000")
+espagnol2000 = liste_sequences_fichier("espagnol2000")
+anglais2000 = liste_sequences_fichier("anglais2000")
 
-allemand2000 = liste_de_sequences("allemand2000")
-xval_allemand = xval_limite(5, allemand2000, 26, 9, 20, 10, 10)
-lvOpt_allemand = xval_allemand[0]
-nbSOpt_allemand = xval_allemand[1]
-print("lvOpt_allemand :", lvOpt_allemand)
-print("nbSOpt_allemand :", nbSOpt_allemand)
+HMM_allemand = HMM.HMM.bw4_limite(45, 26, allemand2000, 10, 1, 10)
+HMM_espagnol = HMM.HMM.bw4_limite(45, 26, espagnol2000, 10, 1, 10)
+HMM_anglais = HMM.HMM.bw4_limite(45, 26, anglais2000, 10, 1, 10)
+
+print("HMM_allemand :", HMM_allemand)
 print()
+print("HMM_espagnol :", HMM_espagnol)
+print()
+print("HMM_anglais :", HMM_anglais)
