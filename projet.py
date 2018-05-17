@@ -91,7 +91,7 @@ def langue_probable(w):
     Langue = ['Allemand', 'Espagnol', 'Anglais']
     logps = []
     for M in HMMs:
-        logp = M.log_vraissemblance([w])
+        logp = M.log_vraissemblance([s])
         logps += [logp]
     return Langue[logps.index(max(logps))]
 
