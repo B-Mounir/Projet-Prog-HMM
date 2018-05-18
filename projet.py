@@ -90,7 +90,7 @@ def langue_probable(w):
     Langue = ['Allemand', 'Espagnol', 'Anglais']
     logps = []
     for M in HMMs:
-        logp = M.log_vraissemblance([s])
+        logp = M.logV([s])
         logps += [logp]
     return Langue[logps.index(max(logps))]
 
@@ -102,48 +102,28 @@ def gen_mots_langue(M, nbIter):
         L += [w]
     return liste_mots(L)
 
-allemand2000 = liste_sequences_fichier("allemand2000")
-espagnol2000 = liste_sequences_fichier("espagnol2000")
-anglais2000 = liste_sequences_fichier("anglais2000")
-
-HMM_allemand = HMM.HMM.bw4_limite(45, 26, allemand2000, 10, 1, 10)
-print("HMM_allemand :", HMM_allemand)
-HMM_allemand.save("HMM_allemand")
-print()
-
-HMM_anglais = HMM.HMM.bw4_limite(45, 26, anglais2000, 10, 1, 10)
-print("HMM_anglais :", HMM_anglais)
-HMM_anglais.save("HMM_anglais")
-print()
-
-HMM_espagnol = HMM.HMM.bw4_limite(45, 26, espagnol2000, 10, 1, 10)
-print("HMM_espagnol :", HMM_espagnol)
-HMM_espagnol.save("HMM_espagnol")
-print()
-
-
 
 print("Bienvenue dans notre programme de présentation du projet de programmation sur les Modèles de Markov cachés.")
 print("Réalisé par le groupe PULSE composé de AMRAM Yassine, BAZELAIRE Guillaume, BENNADJI Mounir et WEBERT Vincent.",
       "\n")
-print("Nous allons ici générer des HMM adaptés à une langue ainsi que générer des mots qui pourrait appartenir à cette"
+print("Nous allons ici générer des HMM adaptés à une langue ainsi que générer des mots qui pourrait appartenir à cette "
       "dernière.", "\n")
 print("Pour cela, nous devons récupérer dans un fichier texte une liste de mots qui sera notre liste de séquences "
       "d'états observables.")
 print("Nous allons donc utiliser le fichier 'anglais2000' qui contient un peu moins de 2000 mots anglais")
 anglais2000 = liste_sequences_fichier('anglais2000')
-print("Commençons par générer un HMM aléatoir et appliquons lui l'algorithme de Baum-Welch jusqu'à ce que la "
-      "vraissemblance de la liste de mots se stabilise.")
+print("Commençons par générer un HMM aléatoire et appliquons lui l'algorithme de Baum-Welch jusqu'à ce que la "
+      "vraisemblance de la liste de mots se stabilise.")
 print("Nous prendrons un HMM de 20 états.", "\n")
-print("Exécution en cours...", "\n", "Cela peut prendre quelques minutes.", "\n\n")
+print("Exécution en cours...", "\nCela peut prendre quelques minutes.", "\n\n")
 
 
 HMM_anglais_v1, nbiter = HMM.HMM.bw2_limite(20, 26, anglais2000, 10, 10)
 
 print("Nous stockons le HMM mis à jour", nbiter, "fois dans le fichier 'HMM_anglais_v1'.")
-print("la Log vraissemblance de notre liste de mots anglais est :", HMM_anglais_v1.logV(anglais2000), "\n\n")
+print("la Log vraisemblance de notre liste de mots anglais est :", HMM_anglais_v1.logV(anglais2000), "\n\n")
 
-print("Comme vous avez pu le remarquer, l'execution de l'algorithme de Baum-Welch demande un temps de clacul important")
+print("Comme vous avez pu le remarquer, l'execution de l'algorithme de Baum-Welch demande un temps de calcul important")
 print("Nous allons donc utiliser par la suite des HMMs déjà enregistrés que l'on a entrainé pour chaque langue", "\n")
 
 print("Nous savons donc approcher un modèle optimal pour un nombre d'états donné mais nous voulons déterminer le nombre"
@@ -225,6 +205,6 @@ print(gen_mots_langue(HMM_allemand, 10))
 print("\nPour l'espagnol:\n")
 print(gen_mots_langue(HMM_espagnol, 10))
 
-print("\n\n", "Merci d'avoir utilisé notre programme.")
-print("\n", "L'équipe PULSE.")
+print("\n\nMerci d'avoir utilisé notre programme.")
+print("\nL'équipe PULSE.")
 
