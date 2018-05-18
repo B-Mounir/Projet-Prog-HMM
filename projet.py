@@ -146,24 +146,74 @@ def gen_mots_langue(M, nbIter):
 
 
 
-print("Bienvenue dans notre programme de présentation du projet de programmation sur les Modèles de Markov cachés.")
-print("Réalisé par le groupe PULSE composé de AMRAM Yassine, BAZELAIRE Guillaume, BENNADJI Mounir et WEBERT Vincent.",
-      "\n")
-print("Nous allons ici générer des HMM adaptés à une langue ainsi que générer des mots qui pourrait appartenir à cette "
+
+print("Bienvenue dans notre programme de présentation du projet de programmation sur les Modèles de Markov cachés.",
+      "\n", "Réalisé par le groupe PULSE composé de AMRAM Yassine, BAZELAIRE Guillaume, BENNADJI Mounir et WEBERT "
+            "Vincent.","\n")
+input("Appuyez sur ENTRÉE pour continuer.\n")
+
+
+var = input("Voulez vous tester les fonctionnalités de la classe HMM ? Si non nous pouvons passer directement à la "
+            "demonstration du projet (o/n) :")
+while var not in ['o', 'n']:
+    var = input("Saisie invalide. Voulez vous tester les fonctionnalités de la classe HMM ? (o/n)")
+
+while var == 'o' :
+    print("Nous allons donc tester les fonctionnalités de la classe HMM.")
+    adr = input("Tout d'abord, entrez l'adresse d'un fichier text contenant un HMM de votre choix :")
+    M = HMM.HMM.load(adr)
+    print("Ce HMM est maintenant chargé et nous pouvons l'utiliser.\n")
+
+    print("Commençons par générer une séquence d'états observables :")
+    l = int(input("Veuillez entrer la longueur de la séquence voulue :"))
+    w = M.gen_rand(l)
+    print("\nLa sequences générée est :", w)
+    print("La probabilité de cette séquence avec notre HMM est :", M.pfw(w))
+    c, p = M.viterbi(w)
+    print("Le chemin qui maximise la probabilité d'obtenir ce mot est", c, "et la log probabilité est alors de", p)
+    char = M.predit(w)
+    print("L'état observable le plus probable d'être émis si on continuait serait :", char)
+
+    print("\n\nMaintenant générerons une liste de séquences d'états observables :")
+    n = int(input("veuillez entrer le nombre de séquences voulu :"))
+    l = int(input("Veuillez entrer la longueur de la séquence voulue :"))
+    S = []
+    for i in range (n):
+        w = M.gen_rand(l)
+        S += [w]
+    print("\nLa liste de sequences générée est :", S)
+    print("La log vraissemblance de cette liste de séquence avec notre HMM est :", M.logV(S))
+    print("\nNous allons maintenant exécuter Baum-Welch sur notre HMM")
+    m = int(input("Veuillez entrer le nombre de fois que vous vous exécuter Baul-Welch :"))
+    for j in range(m):
+        M = HMM.HMM.bw1(M, S)
+    print("\nLe nouveau HMM mis à jour par BW a donc été généré.")
+    print("La log vraissemblance de la liste de séquences est maintenant de :", M.logV(S))
+    print("Nous devrions constater qu'elle a augmenté")
+
+
+    var = input("Voulez vous tester les fonctionnalités de la classe HMM à nouveau ? (o/n) :")
+    while var not in ['o', 'n']:
+        var = input("Saisie invalide. Voulez vous tester les fonctionnalités de la classe HMM à nouveau? (o/n)")
+
+
+
+print("\n\n\n", "Nous allons maintenant générer des HMM adaptés à une langue ainsi que générer des mots qui pourrait appartenir à cette"
       "dernière.", "\n")
 print("Pour cela, nous devons récupérer dans un fichier texte une liste de mots qui sera notre liste de séquences "
       "d'états observables.")
 print("Nous allons donc utiliser le fichier 'anglais2000' qui contient un peu moins de 2000 mots anglais")
 anglais2000 = liste_sequences_fichier('anglais2000')
 print("Commençons par générer un HMM aléatoire et appliquons lui l'algorithme de Baum-Welch jusqu'à ce que la "
-      "vraisemblance de la liste de mots se stabilise.")
+      "vraissemblance de la liste de mots se stabilise.")
 print("Nous prendrons un HMM de 20 états.", "\n")
 print("Exécution en cours...", "\nCela peut prendre quelques minutes.", "\n\n")
 
 
-HMM_anglais_v1, nbiter = HMM.HMM.bw2_limite(20, 26, anglais2000, 10, 4)
+HMM_anglais_v1, nbiter = HMM.HMM.bw2_limite(20, 26, anglais2000, 10, 1)
 
 print("Nous stockons le HMM mis à jour", nbiter, "fois dans le fichier 'HMM_anglais_v1'.")
+HMM_anglais_v1.save('HMM_anglais_v1')
 print("la Log vraisemblance de notre liste de mots anglais est :", HMM_anglais_v1.logV(anglais2000), "\n\n")
 
 print("Comme vous avez pu le remarquer, l'execution de l'algorithme de Baum-Welch demande un temps de calcul important")
@@ -215,8 +265,8 @@ anglais2000 = liste_sequences_fichier("anglais2000")
 HMM_allemand = HMM.HMM.bw4_limite(45, 26, allemand2000, 10, 1, 10)
 HMM_allemand.save("HMM_allemand")
 
-HMM_anglais0 = HMM.HMM.bw4_limite(45, 26, anglais2000, 10, 1, 10)
-HMM_anglais0.save("HMM_anglais0")
+HMM_anglais = HMM.HMM.bw4_limite(45, 26, anglais2000, 10, 1, 10)
+HMM_anglais.save("HMM_anglais")
 
 HMM_espagnol0 = HMM.HMM.bw4_limite(45, 26, espagnol2000, 10, 1, 10)
 HMM_espagnol0.save("HMM_espagnol0")

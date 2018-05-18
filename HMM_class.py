@@ -527,7 +527,7 @@ class HMM:
         :param nbl: Number of letters (Integer)
         :param S: List of observable states sequences
         :param limite: Number of iterations where the likelihood is stabilised (Integer)
-        :param tolerance: Float
+        :param tolerance: Float or Integer
         :return: A HMM randomly generated with nbs states and nbl letters updated using bw1
                 while the likelihood of S is not stabilised
         """
@@ -563,7 +563,7 @@ class HMM:
         :param S: List of observable states sequences
         :param limite: Integer
         :param limite: Integer
-        :param tolerance: Float
+        :param tolerance: Float or Integer
         :param M: Integer
         :return: The HMM Mi (0 <= i <= M-1) generated with bw2_limite which maximize the likelihood of S
         """
