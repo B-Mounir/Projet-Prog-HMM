@@ -10,6 +10,16 @@ import HMM_class as HMM
 
 
 def xval(nbFolds, S, nbL, nbSMin, nbSMax, nbIter, nbInit):
+    """
+    :param nbFolds: Number of folds (Integer)
+    :param S: list of observable states sequences
+    :param nbL: Number of letters (Integer)
+    :param nbSMin: Number of states min (Integer)
+    :param nbSMax: Number of states max (Integer)
+    :param nbIter: Number of iterations of bw2 (Integer)
+    :param nbInit: Number of initilisations in bw4 (Integer)
+    :return: The optimal number of states for an HMM adapted to S and le log likelihood of S with this HMM
+    """
     n = len(S)
     l = np.random.permutation(n)
     lvOpt = -math.inf
@@ -31,6 +41,17 @@ def xval(nbFolds, S, nbL, nbSMin, nbSMax, nbIter, nbInit):
 
 
 def xval_limite(nbFolds, S, nbL, nbSMin, nbSMax, limite, tolerance, nbInit):
+    """
+    :param nbFolds:  Number of folds (Integer)
+    :param S: List of observable states sequences
+    :param nbL:  Number of letters (Integer)
+    :param nbSMin: Number of states min (Integer)
+    :param nbSMax: Number of states max (Integer)
+    :param limite: Number of iterations where the log likelihood has to be stable (Integer)
+    :param tolerance: Tolerance of the log likelihood stabilisation (Float or Integer)
+    :param nbInit: Number of initilisations in bw4 (Integer)
+    :return: The optimal number of states for an HMM adapted to S and le log likelihood of S with this HMM
+    """
     n = len(S)
     l = np.random.permutation(n)
     lvOpt = -math.inf
@@ -52,6 +73,10 @@ def xval_limite(nbFolds, S, nbL, nbSMin, nbSMax, limite, tolerance, nbInit):
 
 
 def liste_sequences_fichier(adr):
+    """
+    :param adr: language text file adress (String)
+    :return: The list of observable states sequences represented by the a language text file
+    """
     file = open(adr)
     S = []
     for mot in file:
@@ -63,6 +88,10 @@ def liste_sequences_fichier(adr):
 
 
 def liste_sequences(S):
+    """
+    :param S: List of words (List of strings)
+    :return: The list of observable states sequences represented by the list of words S
+    """
     L = []
     for mot in S:
         w = []
@@ -74,6 +103,10 @@ def liste_sequences(S):
 
 
 def liste_mots(S):
+    """
+    :param S: List of observable states sequences (List of lists)
+    :return: The list of words represented by S
+    """
     L = []
     for w in S:
         mot = ''
@@ -85,6 +118,10 @@ def liste_mots(S):
 
 
 def langue_probable(w):
+    """
+    :param w: word (String)
+    :return: the most probable language of the word w
+    """
     s = liste_sequences([w])[0]
     HMMs = [HMM_allemand, HMM_espagnol, HMM_anglais]
     Langue = ['Allemand', 'Espagnol', 'Anglais']
@@ -96,11 +133,33 @@ def langue_probable(w):
 
 
 def gen_mots_langue(M, nbIter):
+    """
+    :param M: HMM of a language (HMM)
+    :param nbIter: Number of words generated (Integer)
+    :return: a list of nbIter words generated with the language HMM M
+    """
     L = []
     for i in range(nbIter):
         w = M.gen_rand(3 + i % 5)
         L += [w]
     return liste_mots(L)
+
+
+HMM_allemand = HMM.HMM.bw4_limite(45, 26, allemand2000, 10, 1, 10)
+print("HMM_allemand :", HMM_allemand)
+HMM_allemand.save("HMM_allemand")
+print()
+
+HMM_anglais = HMM.HMM.bw4_limite(45, 26, anglais2000, 10, 1, 10)
+print("HMM_anglais :", HMM_anglais)
+HMM_anglais.save("HMM_anglais")
+print()
+
+HMM_espagnol = HMM.HMM.bw4_limite(45, 26, espagnol2000, 10, 1, 10)
+print("HMM_espagnol :", HMM_espagnol)
+HMM_espagnol.save("HMM_espagnol")
+print()
+
 
 
 print("Bienvenue dans notre programme de présentation du projet de programmation sur les Modèles de Markov cachés.")
@@ -118,7 +177,7 @@ print("Nous prendrons un HMM de 20 états.", "\n")
 print("Exécution en cours...", "\nCela peut prendre quelques minutes.", "\n\n")
 
 
-HMM_anglais_v1, nbiter = HMM.HMM.bw2_limite(20, 26, anglais2000, 10, 10)
+HMM_anglais_v1, nbiter = HMM.HMM.bw2_limite(20, 26, anglais2000, 10, 4)
 
 print("Nous stockons le HMM mis à jour", nbiter, "fois dans le fichier 'HMM_anglais_v1'.")
 print("la Log vraisemblance de notre liste de mots anglais est :", HMM_anglais_v1.logV(anglais2000), "\n\n")
@@ -158,10 +217,11 @@ print(script, "\n\n")
 
 print("Malheureusement cet algorithme a demandé trop de temps de calcul et nous avons pu le réaliser pour l'anglais "
       "uniquement.")
-print("Le nombre d'états optimal renvoyé est de 45, nous prendrons le même pour les 2 autres langues.", "\n")
+print("Le nombre d'états optimal renvoyé est de 45, nous prendrons le même pour les 2 autres langues bien que nombre de"
+      " grande chance d'être différent, il ne devrait pas être très éloigné.", "\n")
 print("Nous avons donc entrainé un HMM à 45 états pour chaque langue avec plusieurs initialisations pour limiter "
       "l'influence du HMM généré aléatoirement au départ.")
-print("Nous avons utilisé le scipt suivant pour les sauvegarder :", "\n")
+print("Nous avons utilisé le script suivant pour les sauvegarder :", "\n")
 
 script = """
 allemand2000 = liste_sequences_fichier("allemand2000")
@@ -171,11 +231,11 @@ anglais2000 = liste_sequences_fichier("anglais2000")
 HMM_allemand = HMM.HMM.bw4_limite(45, 26, allemand2000, 10, 1, 10)
 HMM_allemand.save("HMM_allemand")
 
-HMM_anglais = HMM.HMM.bw4_limite(45, 26, anglais2000, 10, 1, 10)
-HMM_anglais.save("HMM_anglais")
+HMM_anglais0 = HMM.HMM.bw4_limite(45, 26, anglais2000, 10, 1, 10)
+HMM_anglais0.save("HMM_anglais0")
 
-HMM_espagnol = HMM.HMM.bw4_limite(45, 26, espagnol2000, 10, 1, 10)
-HMM_espagnol.save("HMM_espagnol")
+HMM_espagnol0 = HMM.HMM.bw4_limite(45, 26, espagnol2000, 10, 1, 10)
+HMM_espagnol0.save("HMM_espagnol0")
 """
 
 print(script, "\n\n")
@@ -194,7 +254,12 @@ print("'geht' est un mot allemand et la langue probable déterminée est :", lan
 
 print("'cocinar' est un mot espagnol et la langue probable déterminée est :", langue_probable("cocinar"), "\n")
 
-print("Nous pouvons aussi générer des mots qui pourraient appartenir à une langue particulière :", "\n")
+print("'drama' est un mot anglais et la langue probable déterminée est :", langue_probable("drama"))
+print("En effet ce dernier mot est aussi un mot espagnol ce qui explique pourquoi il donne pas la langue attendue.")
+print("De  même, pour d'autres mots d'origine latine le programme aura tendance à se tromper.")
+
+print("\n\n", "Nous pouvons aussi générer des mots qui pourraient appartenir à une langue particulière :")
+print("Voici ci dessosu 10 mots générés par langue :", "\n")
 
 print("\nPour l'anglais:\n")
 print(gen_mots_langue(HMM_anglais, 10))
@@ -207,4 +272,3 @@ print(gen_mots_langue(HMM_espagnol, 10))
 
 print("\n\nMerci d'avoir utilisé notre programme.")
 print("\nL'équipe PULSE.")
-
