@@ -108,6 +108,8 @@ def gen_mots_langue(M, nbIter):
 print("Bienvenue dans notre programme de présentation du projet de programmation sur les Modèles de Markov cachés.")
 print("Réalisé par le groupe PULSE composé de AMRAM Yassine, BAZELAIRE Guillaume, BENNADJI Mounir et WEBERT Vincent.",
       "\n")
+
+
 print("Nous allons ici générer des HMM adaptés à une langue ainsi que générer des mots qui pourrait appartenir à cette"
       "dernière.", "\n")
 print("Pour cela, nous devons récupérer dans un fichier texte une liste de mots qui sera notre liste de séquences "
@@ -120,7 +122,7 @@ print("Nous prendrons un HMM de 20 états.", "\n")
 print("Exécution en cours...", "\n", "Cela peut prendre quelques minutes.", "\n\n")
 
 
-HMM_anglais_v1, nbiter = HMM.HMM.bw2_limite(20, 26, anglais2000, 10, 10)
+HMM_anglais_v1, nbiter = HMM.HMM.bw2_limite(20, 26, anglais2000, 10, 4)
 
 print("Nous stockons le HMM mis à jour", nbiter, "fois dans le fichier 'HMM_anglais_v1'.")
 print("la Log vraissemblance de notre liste de mots anglais est :", HMM_anglais_v1.logV(anglais2000), "\n\n")
@@ -160,7 +162,8 @@ print(script, "\n\n")
 
 print("Malheureusement cet algorithme a demandé trop de temps de calcul et nous avons pu le réaliser pour l'anglais "
       "uniquement.")
-print("Le nombre d'états optimal renvoyé est de 45, nous prendrons le même pour les 2 autres langues.", "\n")
+print("Le nombre d'états optimal renvoyé est de 45, nous prendrons le même pour les 2 autres langues bien que nombre de"
+      " grande chance d'être différent, il ne devrait pas être très éloigné.", "\n")
 print("Nous avons donc entrainé un HMM à 45 états pour chaque langue avec plusieurs initialisations pour limiter "
       "l'influence du HMM généré aléatoirement au départ.")
 print("Nous avons utilisé le script suivant pour les sauvegarder :", "\n")
@@ -197,8 +200,8 @@ print("'geht' est un mot allemand et la langue probable déterminée est :", lan
 print("'cocinar' est un mot espagnol et la langue probable déterminée est :", langue_probable("cocinar"), "\n")
 
 print("'drama' est un mot anglais et la langue probable déterminée est :", langue_probable("drama"))
-print("En effet ce dernier mot est aussi un mot espagnol ce qui explique pourquoi il donne pas la langue attendue")
-print("De  même, pour d'autres mots d'origine latine le programme aura tendance à se tromper")
+print("En effet ce dernier mot est aussi un mot espagnol ce qui explique pourquoi il donne pas la langue attendue.")
+print("De  même, pour d'autres mots d'origine latine le programme aura tendance à se tromper.")
 
 print("\n\n", "Nous pouvons aussi générer des mots qui pourraient appartenir à une langue particulière :")
 print("Voici ci dessosu 10 mots générés par langue :", "\n")
