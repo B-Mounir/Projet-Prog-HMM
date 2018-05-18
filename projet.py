@@ -148,7 +148,7 @@ def gen_mots_langue(M, nbIter):
 
 
 print("Bienvenue dans notre programme de présentation du projet de programmation sur les Modèles de Markov cachés.",
-      "\n", "Réalisé par le groupe PULSE composé de AMRAM Yassine, BAZELAIRE Guillaume, BENNADJI Mounir et WEBERT "
+      "\nRéalisé par le groupe PULSE composé de AMRAM Yassine, BAZELAIRE Guillaume, BENNADJI Mounir et WEBERT "
             "Vincent.","\n")
 input("Appuyez sur ENTRÉE pour continuer.\n")
 
@@ -160,8 +160,13 @@ while var not in ['o', 'n']:
 
 while var == 'o' :
     print("Nous allons donc tester les fonctionnalités de la classe HMM.")
-    adr = input("Tout d'abord, entrez l'adresse d'un fichier text contenant un HMM de votre choix :")
-    M = HMM.HMM.load(adr)
+    while True:
+        adr = input("Tout d'abord, entrez l'adresse d'un fichier text contenant un HMM de votre choix :")
+        try:
+            M = HMM.HMM.load(adr)
+            break
+        except:
+            print("Adresse invalide")
     print("Ce HMM est maintenant chargé et nous pouvons l'utiliser.\n")
 
     print("Commençons par générer une séquence d'états observables :")
@@ -182,13 +187,13 @@ while var == 'o' :
         w = M.gen_rand(l)
         S += [w]
     print("\nLa liste de sequences générée est :", S)
-    print("La log vraissemblance de cette liste de séquence avec notre HMM est :", M.logV(S))
+    print("La log vraisemblance de cette liste de séquence avec notre HMM est :", M.logV(S))
     print("\nNous allons maintenant exécuter Baum-Welch sur notre HMM")
     m = int(input("Veuillez entrer le nombre de fois que vous vous exécuter Baul-Welch :"))
     for j in range(m):
         M = HMM.HMM.bw1(M, S)
     print("\nLe nouveau HMM mis à jour par BW a donc été généré.")
-    print("La log vraissemblance de la liste de séquences est maintenant de :", M.logV(S))
+    print("La log vraisemblance de la liste de séquences est maintenant de :", M.logV(S))
     print("Nous devrions constater qu'elle a augmenté")
 
 
@@ -198,8 +203,7 @@ while var == 'o' :
 
 
 
-print("\n\n\n", "Nous allons maintenant générer des HMM adaptés à une langue ainsi que générer des mots qui pourrait appartenir à cette"
-      "dernière.", "\n")
+print("\n\n\nNous allons maintenant générer des HMM adaptés à une langue ainsi que générer des mots qui pourrait appartenir à cette dernière.", "\n")
 print("Pour cela, nous devons récupérer dans un fichier texte une liste de mots qui sera notre liste de séquences "
       "d'états observables.")
 print("Nous allons donc utiliser le fichier 'anglais2000' qui contient un peu moins de 2000 mots anglais")
@@ -210,7 +214,7 @@ print("Nous prendrons un HMM de 20 états.", "\n")
 print("Exécution en cours...", "\nCela peut prendre quelques minutes.", "\n\n")
 
 
-HMM_anglais_v1, nbiter = HMM.HMM.bw2_limite(20, 26, anglais2000, 10, 1)
+HMM_anglais_v1, nbiter = HMM.HMM.bw2_limite(20, 26, anglais2000, 10, 10)
 
 print("Nous stockons le HMM mis à jour", nbiter, "fois dans le fichier 'HMM_anglais_v1'.")
 HMM_anglais_v1.save('HMM_anglais_v1')
