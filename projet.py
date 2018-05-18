@@ -145,22 +145,6 @@ def gen_mots_langue(M, nbIter):
     return liste_mots(L)
 
 
-HMM_allemand = HMM.HMM.bw4_limite(45, 26, allemand2000, 10, 1, 10)
-print("HMM_allemand :", HMM_allemand)
-HMM_allemand.save("HMM_allemand")
-print()
-
-HMM_anglais = HMM.HMM.bw4_limite(45, 26, anglais2000, 10, 1, 10)
-print("HMM_anglais :", HMM_anglais)
-HMM_anglais.save("HMM_anglais")
-print()
-
-HMM_espagnol = HMM.HMM.bw4_limite(45, 26, espagnol2000, 10, 1, 10)
-print("HMM_espagnol :", HMM_espagnol)
-HMM_espagnol.save("HMM_espagnol")
-print()
-
-
 
 print("Bienvenue dans notre programme de présentation du projet de programmation sur les Modèles de Markov cachés.")
 print("Réalisé par le groupe PULSE composé de AMRAM Yassine, BAZELAIRE Guillaume, BENNADJI Mounir et WEBERT Vincent.",
